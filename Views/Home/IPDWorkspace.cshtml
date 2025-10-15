@@ -1,0 +1,482 @@
+﻿@{
+    ViewData["Title"] = "IPD Workspace";
+}
+
+<style>
+    body {
+        background-color: black;
+        color: white;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+    }
+
+    .main-container {
+        max-width: 95%;
+        margin: 0 auto;
+    }
+
+    .table-container {
+        width: 100%;
+        margin: auto;
+        overflow-x: auto;
+        background-color: #222;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: white;
+        color: black;
+        table-layout: fixed;
+    }
+
+    th, td {
+        padding: 12px 8px;
+        border: 1px solid #ddd;
+        text-align: left;
+        word-wrap: break-word;
+        vertical-align: top;
+    }
+
+    th {
+        background-color: #333;
+        color: white;
+        text-align: center;
+        font-weight: bold;
+        position: sticky;
+        top: 0;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    tr:hover {
+        background-color: #e6e6e6;
+    }
+
+    .filter-container {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 20px;
+        padding: 15px;
+        background-color: #333;
+        border-radius: 8px;
+    }
+
+    input, select {
+        padding: 10px;
+        font-size: 14px;
+        width: 100%;
+        max-width: 300px;
+        border-radius: 4px;
+        border: 1px solid #555;
+        background-color: #222;
+        color: white;
+    }
+
+    .record-count {
+        margin: 15px 0;
+        font-weight: bold;
+        text-align: right;
+        font-size: 16px;
+    }
+
+    .phase-count-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 25px;
+        justify-content: center;
+    }
+
+    .phase-box {
+        width: 160px;
+        height: 160px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-size: 14px;
+        font-weight: bold;
+        border-radius: 10px;
+        text-align: center;
+        padding: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        transition: transform 0.3s;
+    }
+
+        .phase-box:hover {
+            transform: translateY(-5px);
+        }
+
+        .phase-box span {
+            display: block;
+            font-size: 24px;
+            margin-top: 10px;
+        }
+
+    .blue {
+        background-color: #007bff;
+    }
+
+    .black {
+        background-color: #333;
+    }
+
+    .green {
+        background-color: #28a745;
+    }
+
+    .red {
+        background-color: #dc3545;
+    }
+
+    .orange {
+        background-color: #fd7e14;
+    }
+
+    .add-record-container {
+        margin: 25px 0;
+        padding: 20px;
+        background: #333;
+        border-radius: 10px;
+    }
+
+        .add-record-container h3 {
+            margin-top: 0;
+            color: #4CAF50;
+        }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+
+    .add-record-container input,
+    .add-record-container select {
+        width: 100%;
+        margin-bottom: 0;
+        padding: 10px;
+        background-color: #444;
+    }
+
+    .button-container {
+        display: flex;
+        justify-content: flex-end;
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+        border-radius: 5px;
+        font-size: 16px;
+        transition: background-color 0.3s;
+    }
+
+    .add-btn {
+        background-color: #4CAF50;
+        color: white;
+    }
+
+        .add-btn:hover {
+            background-color: #45a049;
+        }
+
+    .print-btn {
+        background-color: #007bff;
+        color: white;
+    }
+
+        .print-btn:hover {
+            background-color: #0069d9;
+        }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 25px;
+        color: #4CAF50;
+        font-size: 28px;
+    }
+
+    @@media screen and (max-width: 1200px) {
+        .phase-box {
+            width: 140px;
+            height: 140px;
+            font-size: 13px;
+        }
+
+            .phase-box span {
+                font-size: 20px;
+            }
+    }
+
+    @@media screen and (max-width: 992px) {
+        .form-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @@media screen and (max-width: 768px) {
+        .phase-count-container {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .phase-box {
+            width: 100%;
+            height: 120px;
+        }
+
+        .filter-container {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        input, select {
+            max-width: 100%;
+        }
+
+        th, td {
+            font-size: 14px;
+            padding: 8px 5px;
+        }
+    }
+
+    @@media screen and (max-width: 576px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .phase-count-container {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="main-container">
+    <div class="table-container">
+        <h2>IPD Workspace Dashboard</h2>
+
+        <div class="phase-count-container">
+            <div class="phase-box blue" id="phase1Count">
+                #1 Idea Intake & Prioritization <br><span>0</span> products
+            </div>
+            <div class="phase-box black" id="phase2Count">
+                #2 Initial Discovery <br><span>0</span> products
+            </div>
+            <div class="phase-box green" id="phase3Count">
+                #3 Concept Development & Design <br><span>0</span> products
+            </div>
+            <div class="phase-box red" id="phase4Count">
+                #4 Design and Build <br><span>0</span> products
+            </div>
+            <div class="phase-box orange" id="phase5Count">
+                #5 University/Gus Roll Out <br><span>0</span> products
+            </div>
+            <div class="phase-box green" id="approvedCount">
+                Approved for Development <br><span>0</span> products
+            </div>
+        </div>
+
+        <div class="filter-container">
+            <input type="text" id="searchProduct" placeholder="Search Product...">
+        </div>
+
+        <div class="add-record-container">
+            <h3>Add New Record</h3>
+            <div class="form-grid" id="newRecordForm">
+                <input type="text" id="newProduct" placeholder="Product">
+                <input type="text" id="newProductCategory" placeholder="Product Category">
+                <input type="text" id="newColleges" placeholder="Colleges">
+                <input type="text" id="newPhase" placeholder="Phase">
+                <input type="text" id="newOnTrackOffTrack" placeholder="On-Track/Off Track">
+                <input type="text" id="newDeansDashboardStatus" placeholder="Deans Dashboard Status">
+                <input type="text" id="newIdeaIntakeStart" placeholder="Idea Intake Start Date">
+                <input type="text" id="newIdeaIntakeEnd" placeholder="Idea Intake End Date">
+                <input type="text" id="newInitialDiscoveryStart" placeholder="Initial Discovery Start Date">
+                <input type="text" id="newInitialDiscoveryEnd" placeholder="Initial Discovery End Date">
+                <input type="text" id="newConceptDevelopmentStart" placeholder="Concept Development Start Date">
+                <input type="text" id="newConceptDevelopmentEnd" placeholder="Concept Development End Date">
+                <input type="text" id="newDesignAndBuildStart" placeholder="Design and Build Start Date">
+                <input type="text" id="newDesignAndBuildEnd" placeholder="Design and Build End Date">
+                <input type="text" id="newUniversityRollOutStart" placeholder="University Roll Out Start Date">
+                <input type="text" id="newUniversityRollOutEnd" placeholder="University Roll Out End Date">
+            </div>
+            <div class="button-container">
+                <button class="btn add-btn" onclick="addNewRecord()">Add Record</button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table id="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 120px;">Product</th>
+                        <th style="width: 120px;">Product Category</th>
+                        <th style="width: 120px;">Colleges</th>
+                        <th style="width: 100px;">Phase</th>
+                        <th style="width: 100px;">On-Track/Off Track</th>
+                        <th style="width: 120px;">Deans Dashboard Status</th>
+                        <th style="width: 120px;">Idea Intake Start</th>
+                        <th style="width: 120px;">Idea Intake End</th>
+                        <th style="width: 120px;">Initial Discovery Start</th>
+                        <th style="width: 120px;">Initial Discovery End</th>
+                        <th style="width: 150px;">Concept Development Start</th>
+                        <th style="width: 150px;">Concept Development End</th>
+                        <th style="width: 120px;">Design and Build Start</th>
+                        <th style="width: 120px;">Design and Build End</th>
+                        <th style="width: 150px;">University Roll Out Start</th>
+                        <th style="width: 150px;">University Roll Out End</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="record-count" id="recordCount">Total Records: 0</div>
+
+        <div class="button-container">
+            <button class="btn print-btn" onclick="printPDF()">Print PDF</button>
+        </div>
+    </div>
+</div>
+
+<script>document.addEventListener("DOMContentLoaded", function () {
+        const googleSheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSkzFZU2JvrwOhRuVN9FmveoimmcZqdsF7ZQwOTQjLWfTUp5khliHIuvd9JuRXDa5wW28vj_Ak9GNAM/pub?output=csv";
+
+        fetch(googleSheetUrl)
+            .then(response => response.text())
+            .then(csvData => {
+                const rows = csvData.trim().split("\n").map(row => row.split(","));
+                const tbody = document.querySelector("#data-table tbody");
+
+                let phaseCounts = {
+                    'Idea Intake & Prioritization': 0,
+                    'Initial Discovery': 0,
+                    'Concept Development & Design': 0,
+                    'Design and Build': 0,
+                    'University/Gus Roll Out': 0,
+                    'Approved for Development': 0
+                };
+
+                for (let i = 1; i < rows.length; i++) {
+                    const row = rows[i];
+                    const phase = row[3];  // Assuming phase is in column index 3
+                    if (phaseCounts.hasOwnProperty(phase)) {
+                        phaseCounts[phase]++;
+                    }
+                    addRowToTable(row);
+                }
+
+                updatePhaseCounts(phaseCounts);
+                document.getElementById("recordCount").textContent = `Total Records: ${rows.length - 1}`;
+            })
+            .catch(error => {
+                console.error("Error fetching data:", error);
+                document.getElementById("recordCount").textContent = "Error loading data";
+            });
+
+        document.getElementById("searchProduct").addEventListener("input", filterTable);
+    });
+
+    function updatePhaseCounts(phaseCounts) {
+        document.getElementById("phase1Count").innerHTML = `#1 Idea Intake & Prioritization <br><span>${phaseCounts['Idea Intake & Prioritization']}</span> products`;
+        document.getElementById("phase2Count").innerHTML = `#2 Initial Discovery <br><span>${phaseCounts['Initial Discovery']}</span> products`;
+        document.getElementById("phase3Count").innerHTML = `#3 Concept Development & Design <br><span>${phaseCounts['Concept Development & Design']}</span> products`;
+        document.getElementById("phase4Count").innerHTML = `#4 Design and Build <br><span>${phaseCounts['Design and Build']}</span> products`;
+        document.getElementById("phase5Count").innerHTML = `#5 University/Gus Roll Out <br><span>${phaseCounts['University/Gus Roll Out']}</span> products`;
+        document.getElementById("approvedCount").innerHTML = `Approved for Development <br><span>${phaseCounts['Approved for Development']}</span> products`;
+    }
+
+    function addRowToTable(data) {
+        const tbody = document.querySelector("#data-table tbody");
+        let tr = document.createElement("tr");
+
+        data.forEach((cell, index) => {
+            let td = document.createElement("td");
+            td.textContent = cell.trim();
+
+            // Add data attribute for filtering
+            if (index === 0) td.dataset.product = cell.trim().toLowerCase();
+            if (index === 3) td.dataset.phase = cell.trim().toLowerCase();
+
+            tr.appendChild(td);
+        });
+
+        tbody.appendChild(tr);
+    }
+
+    function addNewRecord() {
+        let newRecord = [
+            document.getElementById("newProduct").value,
+            document.getElementById("newProductCategory").value,
+            document.getElementById("newColleges").value,
+            document.getElementById("newPhase").value,
+            document.getElementById("newOnTrackOffTrack").value,
+            document.getElementById("newDeansDashboardStatus").value,
+            document.getElementById("newIdeaIntakeStart").value,
+            document.getElementById("newIdeaIntakeEnd").value,
+            document.getElementById("newInitialDiscoveryStart").value,
+            document.getElementById("newInitialDiscoveryEnd").value,
+            document.getElementById("newConceptDevelopmentStart").value,
+            document.getElementById("newConceptDevelopmentEnd").value,
+            document.getElementById("newDesignAndBuildStart").value,
+            document.getElementById("newDesignAndBuildEnd").value,
+            document.getElementById("newUniversityRollOutStart").value,
+            document.getElementById("newUniversityRollOutEnd").value
+        ];
+
+        if (newRecord.some(field => !field.trim())) {
+            alert("Please fill in all fields.");
+            return;
+        }
+
+        addRowToTable(newRecord);
+        updateRecordCount();
+        clearForm();
+    }
+
+    function clearForm() {
+        document.querySelectorAll("#newRecordForm input").forEach(input => {
+            input.value = "";
+        });
+    }
+
+    function filterTable() {
+        const searchTerm = document.getElementById("searchProduct").value.toLowerCase().trim();
+        const rows = document.querySelectorAll("#data-table tbody tr");
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const productName = row.cells[0].textContent.toLowerCase();
+            const match = productName.includes(searchTerm);
+            row.style.display = match ? "" : "none";
+            if (match) visibleCount++;
+        });
+
+        document.getElementById("recordCount").textContent = `Total Records: ${visibleCount}`;
+    }
+
+    function updateRecordCount() {
+        const visibleRows = document.querySelectorAll("#data-table tbody tr:not([style*='display: none'])");
+        document.getElementById("recordCount").textContent = `Total Records: ${visibleRows.length}`;
+    }
+
+    function printPDF() {
+        window.print();
+    }</script>

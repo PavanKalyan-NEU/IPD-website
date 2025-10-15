@@ -1,0 +1,865 @@
+﻿@model Northeastern_Personal_Workspace.Models.UndergraduateVisualizationViewModel
+@{
+    ViewData["Title"] = "Undergraduate Programs - Complexity Score Layout";
+}
+
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f8f9fa;
+        color: #333;
+    }
+
+    .visualization-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .header-section {
+        text-align: center;
+        margin-bottom: 30px;
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 20px;
+    }
+
+    .program-count {
+        font-size: 14px;
+        color: #6c757d;
+        margin-bottom: 10px;
+    }
+
+    .data-source {
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .data-source-success {
+        color: #28a745;
+    }
+
+    .data-source-error {
+        color: #dc3545;
+    }
+
+    .complexity-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #495057;
+    }
+
+    .programs-section {
+        margin-bottom: 40px;
+    }
+
+    .section-header {
+        background-color: #f8f9fa;
+        padding: 12px 20px;
+        border-left: 4px solid #CC3333;
+        margin-bottom: 20px;
+    }
+
+        .section-header h2 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .section-header.minor-section {
+            border-left-color: #FF6666;
+        }
+
+    .complexity-grid {
+        width: 100%;
+        overflow-x: auto;
+        border: 1px solid #dee2e6;
+        position: relative;
+    }
+
+    .complexity-header-container {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background-color: white;
+    }
+
+    .complexity-names-row {
+        display: flex;
+        min-width: 1200px;
+        background-color: #e9ecef;
+    }
+
+    .complexity-name {
+        padding: 8px 15px;
+        text-align: center;
+        font-weight: 700;
+        font-size: 15px;
+        background-color: #e9ecef;
+        border-right: 1px solid #dee2e6;
+        color: #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .complexity-name.basic {
+            flex: 1;
+        }
+
+        .complexity-name.developer {
+            flex: 2;
+        }
+
+        .complexity-name.proficient {
+            flex: 2;
+        }
+
+        .complexity-name.mastery {
+            flex: 1;
+            border-right: none;
+        }
+
+    .complexity-ranges-row {
+        display: flex;
+        min-width: 1200px;
+        background-color: #f8f9fa;
+    }
+
+    .complexity-range {
+        flex: 1;
+        padding: 8px 15px;
+        text-align: center;
+        font-weight: 600;
+        font-size: 13px;
+        background-color: #f8f9fa;
+        border-right: 1px solid #dee2e6;
+        color: #495057;
+    }
+
+        .complexity-range:last-child {
+            border-right: none;
+        }
+
+    .complexity-columns {
+        display: flex;
+        min-width: 1200px;
+        background-color: #e9ecef;
+    }
+
+    .complexity-column {
+        flex: 1;
+        min-width: 200px;
+        background-color: white;
+        border-right: 1px solid #dee2e6;
+    }
+
+        .complexity-column:last-child {
+            border-right: none;
+        }
+
+    .program-cards {
+        padding: 10px;
+        min-height: 500px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        align-items: center;
+    }
+
+    .minor-program-cards {
+        min-height: 400px; /* Increased from 300px to accommodate larger cards */
+    }
+
+    .program-card {
+        width: 180px;
+        border-radius: 4px;
+        padding: 10px 12px; /* Increased padding for better readability */
+        color: white;
+        font-size: 11px;
+        line-height: 1.3;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        cursor: pointer;
+        margin-bottom: 2px;
+        min-height: 55px; /* Ensure minimum height for readability */
+    }
+
+        .program-card:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+        }
+
+    .program-title {
+        font-weight: 600;
+        margin-bottom: 4px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: normal; /* Changed from nowrap to normal to allow wrapping */
+        font-size: 12px;
+        line-height: 1.2;
+        max-height: 2.4em; /* Allow for 2 lines of text */
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
+    .program-details {
+        font-size: 10px;
+        opacity: 0.9;
+        font-weight: 400;
+    }
+
+    /* Bachelor's Program Cards */
+    .bachelor-card {
+        background-color: #CC3333; /* Changed from #4CAF50 */
+    }
+
+    .bachelor-stem-card {
+        background-color: #A52A2A; /* Darker shade for STEM majors */
+    }
+
+    .bachelor-nonstem-card {
+        background-color: #CC3333; /* Changed from #4CAF50 */
+    }
+
+    /* Minor Program Cards */
+    .minor-card {
+        background-color: #FF6666; /* Changed from #FF9800 */
+        width: 180px;
+        min-height: 60px;
+    }
+
+    
+    /* Size-based styling for bachelor programs */
+    .large-program {
+        border-left: 4px solid #FFD700;
+    }
+
+    .coop-program {
+        border-right: 4px solid #2196F3;
+    }
+
+    .internship-program {
+        border-top: 2px solid #9C27B0;
+    }
+
+    .empty-column {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100px;
+        color: #6c757d;
+        font-style: italic;
+        font-size: 12px;
+    }
+
+    .refresh-btn {
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        z-index: 1000;
+        background-color: #CC3333;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 12px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+        .refresh-btn:hover {
+            background-color: #45a049;
+        }
+
+    .error-message {
+        color: #dc3545;
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        border-radius: 4px;
+        padding: 15px;
+        margin: 20px 0;
+        text-align: center;
+    }
+
+    .no-data-warning {
+        text-align: center;
+        padding: 40px;
+        background-color: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 8px;
+        color: #856404;
+        margin: 20px 0;
+    }
+
+    .debug-info {
+        background-color: #e2e3e5;
+        border: 1px solid #d6d8db;
+        border-radius: 4px;
+        padding: 10px;
+        margin: 10px 0;
+        font-size: 12px;
+        color: #6c757d;
+    }
+
+    .success-indicator {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        border-radius: 4px;
+        padding: 10px;
+        margin: 10px 0;
+        color: #155724;
+        text-align: center;
+    }
+
+    .perfect-indicator {
+        background-color: #d1ecf1;
+        border: 1px solid #bee5eb;
+        border-radius: 4px;
+        padding: 10px;
+        margin: 10px 0;
+        color: #0c5460;
+        text-align: center;
+        font-weight: 600;
+    }
+
+    .warning-indicator {
+        background-color: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 4px;
+        padding: 10px;
+        margin: 10px 0;
+        color: #856404;
+        text-align: center;
+    }
+
+    .legend-section {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-top: 30px;
+        padding: 20px;
+        border-top: 2px solid #e9ecef;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: #495057;
+    }
+
+    .legend-color {
+        width: 20px;
+        height: 15px;
+        border-radius: 3px;
+        border: 1px solid #dee2e6;
+    }
+
+    .legend-size-large {
+        width: 25px;
+        height: 15px;
+        background-color: #CC3333;
+        border-radius: 3px;
+    }
+
+    .legend-size-medium {
+        width: 20px;
+        height: 12px;
+        background-color: #CC3333;
+        border-radius: 3px;
+    }
+
+    .legend-size-small {
+        width: 15px;
+        height: 9px;
+        background-color: #CC3333;
+        border-radius: 3px;
+    }
+
+    /* Responsive Design */
+    @@media (max-width: 768px) {
+        .complexity-columns, .complexity-names-row, .complexity-ranges-row {
+            min-width: 800px;
+        }
+
+        .complexity-column {
+            min-width: 130px;
+        }
+
+        .program-card {
+            width: 160px; /* Increased from 120px for better mobile readability */
+            font-size: 10px;
+            padding: 8px 10px; /* Increased padding for mobile */
+            min-height: 50px; /* Ensure minimum height on mobile */
+        }
+
+        .program-title {
+            font-size: 11px;
+        }
+
+        .program-details {
+            font-size: 9px;
+        }
+    }
+
+    /* Modal styles for program details */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 2000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.4);
+    }
+
+    .modal-content {
+        background-color: #fefefe;
+        margin: 10% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 60%;
+        max-width: 600px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    }
+
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+        .close:hover {
+            color: black;
+        }
+
+    .program-details-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+    }
+
+        .program-details-table th {
+            text-align: left;
+            padding: 8px;
+            background-color: #f1f3f4;
+        }
+
+        .program-details-table td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .program-details-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+</style>
+
+<div class="visualization-container">
+    <!-- Refresh Button -->
+    <button class="refresh-btn" onclick="window.location.reload()" title="Refresh Data">
+        🔄 Refresh
+    </button>
+
+
+
+    <!-- Header -->
+    <div class="header-section">
+        @if (!string.IsNullOrEmpty(ViewBag.DataSource))
+        {
+            <div class="data-source @(ViewBag.DataSource.ToString().Contains("Google Sheets") && !ViewBag.DataSource.ToString().Contains("Failed") && !ViewBag.DataSource.ToString().Contains("Error") ? "data-source-success" : "data-source-error")">
+                📊 Data Source: @ViewBag.DataSource
+                @if (!string.IsNullOrEmpty(ViewBag.LastUpdated))
+                {
+                    <span>(Last Updated: @ViewBag.LastUpdated)</span>
+                }
+            </div>
+        }
+
+        @if (Model.TotalProgramsCount > 0)
+        {
+            <div class="program-count">
+                Showing @Model.TotalProgramsCount undergraduate programs from Google Sheets
+                <br><small style="color: #6c757d;">
+                    @Model.BachelorProgramsCount Bachelor's Degrees + @Model.MinorProgramsCount Minor Programs
+                </small>
+            </div>
+
+            @if (Model.BachelorProgramsCount > 0 || Model.MinorProgramsCount > 0)
+            {
+                <div class="success-indicator">
+                    Successfully loaded @Model.BachelorProgramsCount Bachelor's Programs and @Model.MinorProgramsCount Minor Programs
+                </div>
+            }
+        }
+        else
+        {
+            <div class="program-count">
+                No undergraduate programs loaded - Google Sheets connection failed
+            </div>
+        }
+
+        <div class="complexity-title">
+            Complexity Score (1-4)
+        </div>
+    </div>
+
+    <!-- Error Message -->
+    @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+    {
+        <div class="error-message">
+            <strong>⚠️ Data Loading Error:</strong><br>
+            @ViewBag.ErrorMessage
+            <br><br>
+            <a href="/Home/DebugGoogleSheets" target="_blank" style="color: #721c24;">🔧 View Debug Information</a>
+        </div>
+    }
+
+    <!-- Show warning if no data -->
+    @if (Model.TotalProgramsCount == 0)
+    {
+        <div class="no-data-warning">
+            <h3>📊 No Undergraduate Data Loaded from Google Sheets</h3>
+            <p>The visualization cannot display programs because no undergraduate data was retrieved from the Google Sheets.</p>
+            <p><strong>Troubleshooting steps:</strong></p>
+            <ul style="text-align: left; display: inline-block; margin: 0;">
+                <li>Check if the Google Sheet is published and publicly accessible</li>
+                <li>Verify the sheet URL is correct</li>
+                <li>Ensure your internet connection is working</li>
+                <li>Try refreshing the page</li>
+            </ul>
+            <br><br>
+            <a href="/Home/DebugGoogleSheets" target="_blank" style="background: #ffc107; color: #212529; padding: 8px 16px; text-decoration: none; border-radius: 4px; margin-right: 10px;">🔧 Debug Info</a>
+            <a href="https://docs.google.com/spreadsheets/d/e/2PACX-1vQA00pBsgS8EvPEZFA2j6S_QraXI4G4cg_77m-uKgQ7_990xsfhKvibli0FhtHI5ysIYiJ7_tFpEuT7/pubhtml?gid=1739767611" target="_blank" style="background: #28a745; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px;">📄 View Google Sheet</a>
+        </div>
+    }
+    else
+    {
+        <!-- Bachelor's Programs Section -->
+        <div class="programs-section">
+            <div class="section-header">
+                <h2>Bachelor's Degree Programs (BS/BA/BFA) - @Model.BachelorProgramsCount Programs</h2>
+            </div>
+
+            <div class="complexity-grid">
+                <div class="complexity-header-container">
+                    <!-- Complexity Names Row -->
+                    <div class="complexity-names-row">
+                        <div class="complexity-name basic">Basic</div>
+                        <div class="complexity-name developer">Developing</div>
+                        <div class="complexity-name proficient">Proficient</div>
+                        <div class="complexity-name mastery">Mastery</div>
+                    </div>
+                    <!-- Complexity Ranges Row -->
+                    <div class="complexity-ranges-row">
+                        <div class="complexity-range">1.0-1.49</div>
+                        <div class="complexity-range">1.5-1.99</div>
+                        <div class="complexity-range">2.0-2.49</div>
+                        <div class="complexity-range">2.5-2.99</div>
+                        <div class="complexity-range">3.0-3.49</div>
+                        <div class="complexity-range">3.5-4.0</div>
+                    </div>
+                </div>
+
+                <div class="complexity-columns">
+                    @foreach (var bin in Model.ComplexityBins)
+                    {
+                        <div class="complexity-column">
+                            <div class="program-cards">
+                                @if (Model.BachelorsByComplexity.ContainsKey(bin) && Model.BachelorsByComplexity[bin].Any())
+                                {
+                                    @foreach (var program in Model.BachelorsByComplexity[bin])
+                                    {
+                                        <!-- FIXED: Use showBachelorDetails with correct parameters -->
+                                        <div class="program-card bachelor-card"
+                                             style="height: @(program.BoxHeight)px; background-color: @program.BoxColor;"
+                                             onclick="showBachelorDetails('@Html.Raw(Html.Encode(program.ProgramName))', '@program.DegreeType', @program.TotalCourses, @program.Required, @program.Elective, @program.Capstone, @program.ComplexityScore, @program.Level4Topics, '@Html.Raw(Html.Encode(program.AcademicDomain))')">
+                                            <div class="program-title" title="@program.ProgramName">@program.ProgramName</div>
+                                            <div class="program-details">
+                                                R:@program.Required E:@program.Elective C:@program.Capstone Advanced Topics:@program.Level4Topics
+
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <div class="empty-column">No programs</div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Minor Programs Section -->
+        @if (Model.MinorPrograms != null && Model.MinorPrograms.Any())
+        {
+            <div class="programs-section">
+                <div class="section-header minor-section">
+                    <h2>Minor Programs - @Model.MinorProgramsCount Programs</h2>
+                </div>
+
+                <div class="complexity-grid">
+                    <div class="complexity-header-container">
+                        <!-- Complexity Names Row -->
+                        <div class="complexity-names-row">
+                            <div class="complexity-name basic">Basic</div>
+                            <div class="complexity-name developer">Developing</div>
+                            <div class="complexity-name proficient">Proficient</div>
+                            <div class="complexity-name mastery">Mastery</div>
+                        </div>
+                        <!-- Complexity Ranges Row -->
+                        <div class="complexity-ranges-row">
+                            <div class="complexity-range">1.0-1.49</div>
+                            <div class="complexity-range">1.5-1.99</div>
+                            <div class="complexity-range">2.0-2.49</div>
+                            <div class="complexity-range">2.5-2.99</div>
+                            <div class="complexity-range">3.0-3.49</div>
+                            <div class="complexity-range">3.5-4.0</div>
+                        </div>
+                    </div>
+
+                    <div class="complexity-columns">
+                        @foreach (var bin in Model.ComplexityBins)
+                        {
+                            <div class="complexity-column">
+                                <div class="program-cards minor-program-cards">
+                                    @if (Model.MinorsByComplexity.ContainsKey(bin) && Model.MinorsByComplexity[bin].Any())
+                                    {
+                                        @foreach (var program in Model.MinorsByComplexity[bin])
+                                        {
+                                            <!-- FIXED: Use showMinorDetails with correct parameters matching graduate view pattern -->
+                                            <div class="program-card minor-card @(program.OnlineAvailable ? "minor-online-card" : "")"
+                                                 style="height: @(program.BoxHeight)px; background-color: @program.BoxColor;"
+                                                 onclick="showMinorDetails('@Html.Raw(Html.Encode(program.ProgramName))', '@program.DegreeType', @program.TotalCourses, @program.Required, @program.Elective, @program.Capstone, @program.ComplexityScore, @program.Level4Topics, '@Html.Raw(Html.Encode(program.AcademicDomain))', '@Html.Raw(Html.Encode(program.Prerequisites))', @program.OnlineAvailable.ToString().ToLower(), @program.CanCompleteInSummer.ToString().ToLower(), '@Html.Raw(Html.Encode(program.ComplementaryMajors ?? ""))', '@Html.Raw(Html.Encode(program.CareerEnhancement ?? ""))')">
+                                                <div class="program-title" title="@program.ProgramName">@program.ProgramName</div>
+                                                <div class="program-details">
+                                                    R:@program.Required E:@program.Elective C:@program.Capstone Advanced:@program.Level4Topics (@program.ComplexityScore.ToString("F1"))
+
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <div class="empty-column">No programs</div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Legend -->
+        <div class="legend-section">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #CC3333;"></div>
+                <span>Bachelor's Programs (@Model.BachelorProgramsCount)</span>
+            </div>
+
+            @if (Model.MinorPrograms != null && Model.MinorPrograms.Any())
+            {
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #FF6666;"></div>
+                    <span>Minor Programs (@Model.MinorProgramsCount)</span>
+                </div>
+            }
+            <div class="legend-item">
+                <div class="legend-size-large"></div>
+                <span>20+ Courses (Largest)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-size-medium"></div>
+                <span>10-19 Courses (Large)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-size-small"></div>
+                <span>5-9 Courses (Medium)</span>
+            </div>
+
+        </div>
+
+        <!-- Debug Information -->
+        <div class="debug-info">
+            <strong>🔧 Debug Information:</strong><br>
+            Total Programs Loaded: @Model.TotalProgramsCount (@Model.BachelorProgramsCount Bachelor's + @Model.MinorProgramsCount Minors)<br>
+            Average Complexity Score: @Model.AverageComplexityScore.ToString("F1")<br>
+
+            <!-- Complexity Distribution -->
+            <strong>Complexity Distribution:</strong><br>
+            @foreach (var bin in Model.ComplexityBins)
+            {
+                var bachelorsInBin = Model.BachelorsByComplexity.ContainsKey(bin) ? Model.BachelorsByComplexity[bin].Count : 0;
+                var minorsInBin = Model.MinorsByComplexity.ContainsKey(bin) ? Model.MinorsByComplexity[bin].Count : 0;
+                <text>@bin: @bachelorsInBin Bachelors + @minorsInBin Minors = @(bachelorsInBin + minorsInBin) Total<br></text>
+            }
+
+            <br>
+            <a href="/Home/DebugGoogleSheets" target="_blank">📊 View Detailed Debug Info</a> |
+            <a href="/Home/GetUndergraduateProgramsData" target="_blank">🔍 View Raw Data</a>
+        </div>
+    }
+</div>
+
+<!-- Bachelor Program Details Modal -->
+<div id="bachelorDetailsModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeBachelorModal()">&times;</span>
+        <h3 id="bachelorModalTitle"></h3>
+        <table class="program-details-table">
+            <tr><th>Degree Type</th><td id="bachelorModalDegreeType"></td></tr>
+            <tr><th>Total Courses</th><td id="bachelorModalTotalCourses"></td></tr>
+            <tr><th>Required Courses</th><td id="bachelorModalRequired"></td></tr>
+            <tr><th>Elective Courses</th><td id="bachelorModalElective"></td></tr>
+            <tr><th>Capstone</th><td id="bachelorModalCapstone"></td></tr>
+            <tr><th>Complexity Score</th><td id="bachelorModalComplexity"></td></tr>
+            <tr><th>Advanced Topics</th><td id="bachelorModalAdvanced"></td></tr>
+            <tr><th>Academic Domain</th><td id="bachelorModalDomain"></td></tr>
+        </table>
+    </div>
+</div>
+
+<!-- Minor Program Details Modal -->
+<div id="minorDetailsModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeMinorModal()">&times;</span>
+        <h3 id="minorModalTitle"></h3>
+        <table class="program-details-table">
+            <tr><th>Degree Type</th><td id="minorModalDegreeType"></td></tr>
+            <tr><th>Total Courses</th><td id="minorModalTotalCourses"></td></tr>
+            <tr><th>Required Courses</th><td id="minorModalRequired"></td></tr>
+            <tr><th>Elective Courses</th><td id="minorModalElective"></td></tr>
+            <tr><th>Capstone</th><td id="minorModalCapstone"></td></tr>
+            <tr><th>Complexity Score</th><td id="minorModalComplexity"></td></tr>
+            <tr><th>Advanced Topics</th><td id="minorModalAdvanced"></td></tr>
+            <tr><th>Academic Domain</th><td id="minorModalDomain"></td></tr>
+        </table>
+    </div>
+</div>
+
+<script>
+    // UPDATED: Make showBachelorDetails consistent with graduate view pattern
+    function showBachelorDetails(programName, degreeType, totalCourses, required, elective, capstone, complexityScore, level4Topics, academicDomain, isStem, hasCoop, hasInternship, careerPaths, prerequisites) {
+        document.getElementById('bachelorModalTitle').textContent = programName;
+        document.getElementById('bachelorModalDegreeType').textContent = degreeType;
+        document.getElementById('bachelorModalTotalCourses').textContent = totalCourses;
+        document.getElementById('bachelorModalRequired').textContent = required;
+        document.getElementById('bachelorModalElective').textContent = elective;
+        document.getElementById('bachelorModalCapstone').textContent = capstone;
+        document.getElementById('bachelorModalComplexity').textContent = complexityScore;
+        document.getElementById('bachelorModalAdvanced').textContent = level4Topics;
+        document.getElementById('bachelorModalDomain').textContent = academicDomain;
+
+
+        document.getElementById('bachelorDetailsModal').style.display = 'block';
+    }
+
+    // UPDATED: Make showMinorDetails consistent with graduate view pattern
+    function showMinorDetails(programName, degreeType, totalCourses, required, elective, capstone, complexityScore, level4Topics, academicDomain, prerequisites, isOnline, canSummer, complementaryMajors, careerEnhancement) {
+        document.getElementById('minorModalTitle').textContent = programName;
+        document.getElementById('minorModalDegreeType').textContent = degreeType;
+        document.getElementById('minorModalTotalCourses').textContent = totalCourses;
+        document.getElementById('minorModalRequired').textContent = required;
+        document.getElementById('minorModalElective').textContent = elective;
+        document.getElementById('minorModalCapstone').textContent = capstone;
+        document.getElementById('minorModalComplexity').textContent = complexityScore;
+        document.getElementById('minorModalAdvanced').textContent = level4Topics;
+        document.getElementById('minorModalDomain').textContent = academicDomain;
+
+
+        document.getElementById('minorDetailsModal').style.display = 'block';
+    }
+
+    // Copy the same modal closing logic from graduate view
+    function closeBachelorModal() {
+        document.getElementById('bachelorDetailsModal').style.display = 'none';
+    }
+
+    function closeMinorModal() {
+        document.getElementById('minorDetailsModal').style.display = 'none';
+    }
+
+    // Consistent window click handler
+    window.onclick = function (event) {
+        const bachelorModal = document.getElementById('bachelorDetailsModal');
+        const minorModal = document.getElementById('minorDetailsModal');
+        if (event.target == bachelorModal) {
+            bachelorModal.style.display = 'none';
+        }
+        if (event.target == minorModal) {
+            minorModal.style.display = 'none';
+        }
+    }
+
+    // Add smooth scrolling for horizontal scroll containers
+    document.addEventListener('DOMContentLoaded', function() {
+        const scrollContainers = document.querySelectorAll('.complexity-grid');
+
+        scrollContainers.forEach(container => {
+            container.addEventListener('wheel', function(e) {
+                if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+                    e.preventDefault();
+                    this.scrollLeft += e.deltaX;
+                }
+            });
+        });
+
+        // Copy the same logging pattern from graduate view
+        const dataSource = '@(ViewBag.DataSource ?? "")';
+        const totalPrograms = @Model.TotalProgramsCount;
+        const bachelorCount = @Model.BachelorProgramsCount;
+        const minorCount = @Model.MinorProgramsCount;
+
+        console.log('=== Undergraduate Programs Visualization Debug ===');
+        console.log(`Data Source: ${dataSource}`);
+        console.log(`Total Programs: ${totalPrograms}`);
+        console.log(`Bachelor's: ${bachelorCount}`);
+        console.log(`Minors: ${minorCount}`);
+
+        if (totalPrograms > 0) {
+            console.log('✅ Data loaded successfully from Google Sheets');
+        } else {
+            console.error('❌ No data loaded from Google Sheets');
+        }
+
+        // Log complexity distribution (same pattern as graduate view)
+        console.log('=== Complexity Distribution ===');
+        @foreach (var bin in Model.ComplexityBins)
+        {
+            var bachelorsInBin = Model.BachelorsByComplexity.ContainsKey(bin) ? Model.BachelorsByComplexity[bin].Count : 0;
+            var minorsInBin = Model.MinorsByComplexity.ContainsKey(bin) ? Model.MinorsByComplexity[bin].Count : 0;
+            <text>console.log(`${@Json.Serialize(bin)}: ${@bachelorsInBin} Bachelors + ${@minorsInBin} Minors = ${@(bachelorsInBin + minorsInBin)} Total`);</text>
+        }
+        console.log('==========================================');
+    });
+
+    // Enhanced error handling
+    window.addEventListener('error', function(e) {
+        console.error('Page error:', e.error);
+    });
+</script>

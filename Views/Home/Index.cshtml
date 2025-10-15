@@ -1,0 +1,632 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<style>
+    :root {
+        --burgundy: #800020;
+        --northeastern-red: #C8102E;
+    }
+
+    body {
+        background: white;
+        color: black;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+    }
+
+    .main-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    .header {
+        text-align: center;
+        margin-bottom: 2rem;
+        animation: fadeIn 1s ease-in-out;
+    }
+
+        .header h3 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0.8rem;
+            color: black;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: black;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+    .button-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 15px;
+        margin: 2rem auto;
+        max-width: 800px;
+    }
+
+    .portal-button {
+        background: white;
+        border: 1px solid black;
+        color: black;
+        padding: 1.2rem;
+        font-size: 1.1rem;
+        border-radius: 0;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+        height: 120px;
+        box-sizing: border-box;
+    }
+
+        .portal-button:hover {
+            background: black;
+            color: white;
+            border-color: var(--burgundy);
+        }
+
+    .graduate-programs-button {
+        border: 1px solid var(--burgundy);
+        color: var(--burgundy);
+    }
+
+        .graduate-programs-button:hover {
+            background: var(--burgundy);
+            color: white;
+        }
+
+    /* Special styling for Course Search button */
+    .course-search-button {
+        border: 2px solid var(--northeastern-red);
+        color: var(--northeastern-red);
+        font-weight: 600;
+    }
+
+        .course-search-button:hover {
+            background: var(--northeastern-red);
+            color: white;
+            border-color: var(--northeastern-red);
+        }
+
+        .course-search-button span {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .course-search-button .new-badge {
+            background: var(--northeastern-red);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .course-search-button:hover .new-badge {
+            background: white;
+            color: var(--northeastern-red);
+        }
+
+    .report-section {
+        background: white;
+        border-radius: 0;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        border: 1px solid black;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+        .report-section h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1.2rem;
+            color: black;
+            text-align: center;
+        }
+
+    .search-container {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 1.2rem;
+    }
+
+    .search-input {
+        flex: 1;
+        padding: 10px 15px;
+        border-radius: 0;
+        border: 1px solid black;
+        background: white;
+        color: black;
+        font-size: 0.95rem;
+    }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--burgundy);
+        }
+
+        .search-input::placeholder {
+            color: black;
+            opacity: 0.5;
+        }
+
+    .search-button {
+        padding: 10px 20px;
+        background: black;
+        color: white;
+        border: 1px solid black;
+        border-radius: 0;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+        .search-button:hover {
+            background: var(--burgundy);
+            border-color: var(--burgundy);
+        }
+
+        .search-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+    .report-results {
+        margin-top: 1.5rem;
+        display: none;
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    .report-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .report-item {
+        background: white;
+        border-radius: 0;
+        padding: 0.8rem;
+        margin-bottom: 0.8rem;
+        transition: all 0.2s ease;
+        border-left: 3px solid black;
+    }
+
+        .report-item:hover {
+            border-left-color: var(--burgundy);
+        }
+
+    .report-link {
+        color: black;
+        text-decoration: none;
+        font-weight: 500;
+        display: block;
+    }
+
+        .report-link:hover {
+            color: var(--burgundy);
+        }
+
+        .report-link::before {
+            content: '→';
+            margin-right: 8px;
+            color: var(--burgundy);
+            font-weight: bold;
+        }
+
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(0, 0, 0, 0.3);
+        border-radius: 50%;
+        border-top-color: var(--burgundy);
+        animation: spin 1s ease-in-out infinite;
+        margin-right: 10px;
+    }
+
+    @@keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .status-indicator {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--burgundy);
+    }
+
+    /* Enrollment Dashboard Tabs */
+    .enrollment-section {
+        background: white;
+        border-radius: 0;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        border: 1px solid black;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+        .enrollment-section h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1.2rem;
+            color: black;
+            text-align: center;
+        }
+
+    .enrollment-tabs {
+        display: flex;
+        border-bottom: 1px solid #ddd;
+        margin-bottom: 1.2rem;
+    }
+
+    .enrollment-tab {
+        padding: 10px 20px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        color: #777;
+        border-bottom: 3px solid transparent;
+        transition: all 0.3s ease;
+    }
+
+        .enrollment-tab.active {
+            color: var(--burgundy);
+            border-bottom-color: var(--burgundy);
+        }
+
+        .enrollment-tab:hover:not(.active) {
+            color: black;
+        }
+
+    .enrollment-content {
+        display: none;
+        padding: 1rem;
+        border: 1px solid #eee;
+        border-top: none;
+    }
+
+        .enrollment-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+    .enrollment-button {
+        display: inline-block;
+        padding: 10px 20px;
+        background: black;
+        color: white;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: 1px solid black;
+    }
+
+        .enrollment-button:hover {
+            background: var(--burgundy);
+            border-color: var(--burgundy);
+            color: white;
+        }
+
+    .enrollment-description {
+        margin-bottom: 1.2rem;
+        line-height: 1.6;
+    }
+
+    @@media (max-width: 768px) {
+        .button-grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+            max-width: 500px;
+        }
+
+        .header h3 {
+            font-size: 1.8rem;
+        }
+
+        .portal-button {
+            height: 100px;
+            font-size: 1rem;
+        }
+
+        .search-container {
+            flex-direction: column;
+        }
+
+        .enrollment-tabs {
+            flex-direction: column;
+        }
+
+        .enrollment-tab {
+            border-bottom: 1px solid #ddd;
+            border-left: 3px solid transparent;
+        }
+
+            .enrollment-tab.active {
+                border-left-color: var(--burgundy);
+                border-bottom: 1px solid #ddd;
+            }
+    }
+
+    @@media (max-width: 480px) {
+        .main-container {
+            padding: 1.5rem 0.8rem;
+        }
+
+        .header h3 {
+            font-size: 1.6rem;
+        }
+
+        .portal-button {
+            padding: 1rem;
+            height: 90px;
+        }
+    }
+</style>
+
+<div class="main-container">
+    <div class="header">
+        <h3>Welcome to the IPD WorkSpace Portal</h3>
+        <p>Your centralized hub for innovation, product development, and industry research</p>
+    </div>
+
+    <div class="button-grid">
+        <form asp-controller="Home" asp-action="DomainAndSubDomainWork" method="get">
+            <button type="submit" class="portal-button">
+                <span>Domains & Subdomains</span>
+            </button>
+        </form>
+
+        <form asp-controller="Home" asp-action="GraduateProgramsVisualization" method="get">
+            <button type="submit" class="portal-button">
+                <span>AI - Graduate Programs</span>
+            </button>
+        </form>
+
+        <form asp-controller="Home" asp-action="UndergraduateProgramsVisualization" method="get">
+            <button type="submit" class="portal-button">
+                <span>AI - Undergraduate Programs </span>
+            </button>
+        </form>
+
+        <form asp-controller="Home" asp-action="BubbleChartVisualization" method="get">
+            <button type="submit" class="portal-button">
+                <span>Overall AI Programs Visualization</span>
+            </button>
+        </form>
+
+        <form asp-controller="Query" asp-action="Builder" method="get">
+            <button type="submit" class="portal-button">
+                <span>USPTO Patent Query Builder</span>
+            </button>
+        </form>
+
+        <form asp-controller="StrategicAnalysis" asp-action="Dashboard" method="get">
+            <button type="submit" class="portal-button">
+                <span>Strategic Patent Analysis Dashboard</span>
+            </button>
+        </form>
+
+        <form asp-controller="Dashboard" asp-action="Index" method="get">
+            <button type="submit" class="portal-button">
+                <span>COE & COS Enrollment Dashboard</span>
+            </button>
+        </form>
+
+        <!-- NEW Course Search Button -->
+        <form asp-controller="Course" asp-action="Index" method="get">
+            <button type="submit" class="portal-button course-search-button">
+                <span>
+                    Graduate Course Search
+                    <small class="new-badge">NEW</small>
+                </span>
+            </button>
+        </form>
+    </div>
+
+    <!-- Course Search Information Section -->
+    <div class="enrollment-section">
+        <h3>Course Search Feature</h3>
+        <div class="enrollment-tabs">
+            <button class="enrollment-tab active" data-tab="overview">Overview</button>
+            <button class="enrollment-tab" data-tab="features">Features</button>
+            <button class="enrollment-tab" data-tab="testing">Testing Guide</button>
+        </div>
+
+        <div id="overview" class="enrollment-content active">
+            <div class="enrollment-description">
+                <strong>Graduate Course Search</strong> allows you to search through the Northeastern University 2024-2025 Graduate Catalog.
+                Find courses by keywords, departments, or specific topics like "AI/ML Engineering + Mechanical Engineering".
+            </div>
+            <a href="/Course" class="enrollment-button">Open Course Search</a>
+        </div>
+
+        <div id="features" class="enrollment-content">
+            <div class="enrollment-description">
+                <h4>Key Features:</h4>
+                <ul style="margin-left: 20px; line-height: 1.8;">
+                    <li>Search by multiple keywords using + or comma separators</li>
+                    <li>View course numbers, names, credits, and departments</li>
+                    <li>See prerequisites and course descriptions</li>
+                    <li>Understand why each course matches your search</li>
+                    <li>Automatic PDF parsing from official catalog</li>
+                </ul>
+            </div>
+            <a href="/Course" class="enrollment-button">Try Course Search</a>
+        </div>
+
+        <div id="testing" class="enrollment-content">
+            <div class="enrollment-description">
+                <h4>Sample Searches to Test:</h4>
+                <ul style="margin-left: 20px; line-height: 1.8;">
+                    <li><strong>machine learning</strong> - Find all ML courses</li>
+                    <li><strong>AI/ML Engineering + Mechanical Engineering</strong> - Cross-disciplinary search</li>
+                    <li><strong>data science</strong> - Analytics and data courses</li>
+                    <li><strong>robotics</strong> - Robotics and automation courses</li>
+                    <li><strong>CS 5100</strong> - Search specific course numbers</li>
+                </ul>
+                <p style="margin-top: 15px;"><em>Note: First search may take 30-60 seconds to download the catalog PDF.</em></p>
+            </div>
+            <a href="/Course" class="enrollment-button">Start Testing</a>
+        </div>
+    </div>
+
+    @*<div class="report-section">
+            <h3>Find Industry Reports</h3>
+            <div class="search-container">
+                <input type="text" id="industrySearch" class="search-input" placeholder="Enter industry topic (e.g., AI, renewable energy, fintech)...">
+                <button id="searchButton" class="search-button" onclick="fetchIndustryReports()">
+                    <span id="searchButtonText">Search</span>
+                </button>
+            </div>
+
+            <div id="reportResults" class="report-results">
+                <ul id="reportList" class="report-list"></ul>
+            </div>
+        </div>*@
+</div>
+
+<script>// Enrollment tabs functionality
+    document.addEventListener('DOMContentLoaded', function () {
+        const tabs = document.querySelectorAll('.enrollment-tab');
+        const contents = document.querySelectorAll('.enrollment-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.getAttribute('data-tab');
+
+                // Update active tab
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                // Show active content
+                contents.forEach(content => {
+                    content.classList.remove('active');
+                    if (content.id === tabId) {
+                        content.classList.add('active');
+                    }
+                });
+            });
+        });
+    });
+
+    function fetchIndustryReports() {
+        var query = document.getElementById("industrySearch").value.trim();
+        if (!query) {
+            alert("Please enter a topic to search for industry reports.");
+            return;
+        }
+
+        const reportResults = document.getElementById("reportResults");
+        const reportList = document.getElementById("reportList");
+        const searchButton = document.getElementById("searchButton");
+        const searchButtonText = document.getElementById("searchButtonText");
+
+        // Show loading state
+        reportResults.style.display = "block";
+        reportList.innerHTML = '<li class="report-item"><span class="loading-spinner"></span>Searching for reports...</li>';
+        searchButton.disabled = true;
+        searchButtonText.textContent = "Searching...";
+
+        fetch('/Home/GetIndustryReports?query=' + encodeURIComponent(query))
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                reportList.innerHTML = "";
+
+                if (data.reportSummary) {
+                    // Handle the actual API response structure
+                    const summaryItem = document.createElement("li");
+                    summaryItem.className = "report-item";
+                    summaryItem.innerHTML = `<div style="white-space: pre-wrap;">${data.reportSummary}</div>`;
+                    reportList.appendChild(summaryItem);
+                } else if (data.length === 0) {
+                    reportList.innerHTML = '<li class="report-item">No reports found. Try a different search term.</li>';
+                } else {
+                    // Handle array response (if structure changes)
+                    data.forEach(report => {
+                        const li = document.createElement("li");
+                        li.className = "report-item";
+                        const a = document.createElement("a");
+                        a.className = "report-link";
+                        a.href = report.Link || "#";
+                        a.textContent = report.Title || report;
+                        a.target = "_blank";
+                        li.appendChild(a);
+                        reportList.appendChild(li);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching reports:', error);
+                reportList.innerHTML =
+                    '<li class="report-item">⚠️ Error loading reports. Please check your connection and try again.</li>';
+            })
+            .finally(() => {
+                // Reset button state
+                searchButton.disabled = false;
+                searchButtonText.textContent = "Search";
+            });
+    }
+
+    // Enhanced event listeners
+    document.getElementById("industrySearch")?.addEventListener("keypress", function (event) {
+        if (event.key === "Enter") {
+            fetchIndustryReports();
+        }
+    });
+
+    // Clear results when input is cleared
+    document.getElementById("industrySearch")?.addEventListener("input", function (event) {
+        if (event.target.value.trim() === "") {
+            document.getElementById("reportResults").style.display = "none";
+        }
+    });
+
+    // Add some visual feedback when buttons are clicked
+    document.querySelectorAll('.portal-button').forEach(button => {
+        button.addEventListener('click', function () {
+            this.style.transform = 'translateY(-1px) scale(0.98)';
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 150);
+        });
+    });</script>

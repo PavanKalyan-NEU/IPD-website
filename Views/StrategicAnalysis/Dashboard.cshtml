@@ -1,0 +1,1393 @@
+﻿@model USPTOQueryBuilder.Models.StrategicDashboardViewModel
+@{
+    ViewData["Title"] = "Strategic Analysis Dashboard - Engineering & Applied Sciences";
+}
+
+<style>
+    .dashboard-container {
+        padding: 20px;
+        background-color: #f8f9fa;
+        min-height: 100vh;
+    }
+
+    .metric-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        transition: transform 0.2s;
+    }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+    .chart-container {
+        background: white;
+        border-radius: 10px;
+        padding: 25px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+        min-height: 400px;
+    }
+
+    .heatmap-container {
+        height: 600px;
+        overflow: hidden;
+    }
+
+    .treemap-container {
+        height: 500px;
+    }
+
+    .growth-indicator {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .growth-positive {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .growth-negative {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .tech-bubble {
+        display: inline-block;
+        padding: 8px 16px;
+        margin: 4px;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .bubble-size-1 {
+        background-color: #e3f2fd;
+        font-size: 0.8rem;
+    }
+
+    .bubble-size-2 {
+        background-color: #bbdefb;
+        font-size: 1rem;
+    }
+
+    .bubble-size-3 {
+        background-color: #90caf9;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .bubble-size-4 {
+        background-color: #64b5f6;
+        font-size: 1.2rem;
+        font-weight: 700;
+    }
+
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255,255,255,0.9);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+
+    .insights-panel {
+        background: #f0f7ff;
+        border-left: 4px solid #007bff;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 4px;
+    }
+
+    .tech-card {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 10px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+        .tech-card:hover {
+            border-color: #007bff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+    .sunburst-legend {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 20px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        margin: 5px 10px;
+        font-size: 0.9rem;
+    }
+
+    .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 3px;
+        margin-right: 8px;
+    }
+</style>
+
+<div class="dashboard-container">
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                <span class="sr-only">Loading...</span>
+            </div>
+            <p class="mt-3">Analyzing patent data...</p>
+        </div>
+    </div>
+
+    <h1 class="mb-4">Strategic Patent Analysis Dashboard</h1>
+    <p class="lead">Engineering & Applied Sciences Evolution Analysis</p>
+
+    <!-- Control Panel -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="metric-card">
+                <h5>Analysis Parameters</h5>
+                <div class="row">
+                    <div class="col-md-2">
+                        <label>Start Year</label>
+                        <select id="startYear" class="form-control">
+                            @for (int year = 2019; year <= DateTime.Now.Year; year++)
+                            {
+                                @if (year == Model.StartYear)
+                                {
+                                    <option value="@year" selected>@year</option>
+                                }
+                                else
+                                {
+                                    <option value="@year">@year</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label>End Year</label>
+                        <select id="endYear" class="form-control">
+                            @for (int year = 2019; year <= DateTime.Now.Year; year++)
+                            {
+                                @if (year == Model.EndYear)
+                                {
+                                    <option value="@year" selected>@year</option>
+                                }
+                                else
+                                {
+                                    <option value="@year">@year</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label>View Type</label>
+                        <select id="viewType" class="form-control">
+                            <option value="heatmap">Technology Heatmap</option>
+                            <option value="treemap">Hierarchical View</option>
+                            <option value="sunburst">Innovation Sunburst</option>
+                            <option value="bubble">Growth Bubbles</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label>Analysis Mode</label>
+                        <select id="analysisMode" class="form-control">
+                            <option value="overview">Overview Analysis</option>
+                            <option value="custom">Custom Technology Filter</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label>&nbsp;</label>
+                        <button class="btn btn-primary btn-block" onclick="updateAnalysis()">
+                            <i class="fas fa-sync"></i> Update
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Custom Technology Filter Panel -->
+                <div id="customFilterPanel" class="mt-3" style="display:none;">
+                    <hr>
+                    <h6>Select Technology Categories to Analyze:</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Convergence Technologies</h6>
+                            <div class="form-check">
+                                <input class="form-check-input tech-filter" type="checkbox" value="AI & Engineering" id="filterAI">
+                                <label class="form-check-label" for="filterAI">
+                                    AI & Engineering Convergence
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input tech-filter" type="checkbox" value="Climate & Materials" id="filterClimate">
+                                <label class="form-check-label" for="filterClimate">
+                                    Climate Technology & Materials Science
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input tech-filter" type="checkbox" value="Bioengineering & Health" id="filterBio">
+                                <label class="form-check-label" for="filterBio">
+                                    Bioengineering & Digital Health
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">High-Growth Sectors</h6>
+                            <div class="form-check">
+                                <input class="form-check-input tech-filter" type="checkbox" value="Autonomous Systems" id="filterAutonomous">
+                                <label class="form-check-label" for="filterAutonomous">
+                                    Autonomous Systems & Robotics
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input tech-filter" type="checkbox" value="Quantum Technology" id="filterQuantum">
+                                <label class="form-check-label" for="filterQuantum">
+                                    Quantum Technology Applications
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input tech-filter" type="checkbox" value="Program Control" id="filterControl">
+                                <label class="form-check-label" for="filterControl">
+                                    Program Control Units
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Innovation Patterns</h6>
+                            <div class="form-check">
+                                <input class="form-check-input tech-filter" type="checkbox" value="Tech Giants" id="filterGiants">
+                                <label class="form-check-label" for="filterGiants">
+                                    Tech Giants in Applied Sciences
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input tech-filter" type="checkbox" value="Emerging Companies" id="filterEmerging">
+                                <label class="form-check-label" for="filterEmerging">
+                                    Emerging Company Activity
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mt-4">
+                                <button class="btn btn-info btn-sm" onclick="selectAllFilters()">Select All</button>
+                                <button class="btn btn-secondary btn-sm" onclick="clearAllFilters()">Clear All</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics Summary -->
+    <div class="row">
+        <div class="col-md-3">
+            <div class="metric-card text-center">
+                <h3 id="totalPatents" class="text-primary">-</h3>
+                <p class="mb-0">Total Patents Analyzed</p>
+                <small class="text-muted">Across all categories</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card text-center">
+                <h3 id="growthRate" class="text-success">-</h3>
+                <p class="mb-0">Avg. Annual Growth</p>
+                <small class="text-muted">Year over year</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card text-center">
+                <h3 id="emergingAreas" class="text-warning">-</h3>
+                <p class="mb-0">Emerging Technologies</p>
+                <small class="text-muted">&gt;30% growth rate</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card text-center">
+                <h3 id="topCompany" class="text-info">-</h3>
+                <p class="mb-0">Leading Innovator</p>
+                <small class="text-muted">Most patents filed</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Visualization Area -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="chart-container">
+                <h4 id="vizTitle">Technology Innovation Heatmap</h4>
+                <p class="text-muted" id="vizDescription">Interactive visualization of patent activity across technology areas</p>
+
+                <!-- Different visualization containers -->
+                <div id="heatmapView" class="heatmap-container"></div>
+                <div id="treemapView" class="treemap-container" style="display:none;"></div>
+                <div id="sunburstView" class="treemap-container" style="display:none;"></div>
+                <div id="bubbleView" class="treemap-container" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Technology Growth Cards -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="metric-card">
+                <h5>Top Growing Technology Areas</h5>
+                <div id="techGrowthCards" class="row">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Innovators Section -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h4>Innovation Leaders Overview</h4>
+                <p class="text-muted">Universities vs Companies Patent Distribution</p>
+                <div id="innovatorsDonut" style="height: 400px;"></div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h4>Top Patent Holders Network</h4>
+                <p class="text-muted">Bubble size = patent count, Color = type</p>
+                <div id="innovatorsBubble" style="height: 400px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Inventors with Download Option -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="metric-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5>Patent Activity Summary</h5>
+                    <button class="btn btn-sm btn-primary" onclick="downloadFullData()">
+                        <i class="fas fa-download"></i> Download Full Dataset
+                    </button>
+                </div>
+                <div id="inventorsSummary" class="row">
+                    <!-- Summary cards -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtered Results Section (shown when custom filter is active) -->
+    <div id="filteredResultsSection" style="display:none;">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="metric-card">
+                    <h4>Custom Technology Analysis Results</h4>
+                    <div id="selectedFiltersDisplay" class="mb-3"></div>
+                    <div class="row">
+                        <div class="col-md-3 text-center">
+                            <h3 id="filteredTotalPatents" class="text-primary">-</h3>
+                            <p class="mb-0">Total Patents</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h3 id="filteredGrowthRate" class="text-success">-</h3>
+                            <p class="mb-0">Growth Rate (CAGR)</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h3 id="filteredTopInnovator" class="text-info">-</h3>
+                            <p class="mb-0">Top Innovator</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <button class="btn btn-sm btn-primary mt-3" onclick="downloadFilteredData()">
+                                <i class="fas fa-download"></i> Export Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h5>Yearly Patent Trends</h5>
+                    <div id="filteredTrendChart" style="height: 350px;"></div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h5>Top Innovators</h5>
+                    <div id="filteredInnovatorsChart" style="height: 350px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="metric-card">
+                    <h5>Recent Patents Sample</h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Patent ID</th>
+                                    <th>Title</th>
+                                    <th>Date</th>
+                                    <th>Assignee</th>
+                                </tr>
+                            </thead>
+                            <tbody id="filteredPatentsList">
+                                <!-- Dynamically populated -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Strategic Insights -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="insights-panel">
+                <h4><i class="fas fa-lightbulb"></i> Strategic Insights & Opportunities</h4>
+                <div id="strategicInsights">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <script>let currentData = {};
+        let fullDataCache = {};
+        let filteredDataCache = {};
+        let currentView = 'heatmap';
+        let currentMode = 'overview';
+
+        $(document).ready(function () {
+            // Initialize event handlers
+            $('#analysisMode').change(function () {
+                currentMode = $(this).val();
+                if (currentMode === 'custom') {
+                    $('#customFilterPanel').slideDown();
+                    $('#filteredResultsSection').hide();
+                } else {
+                    $('#customFilterPanel').slideUp();
+                    $('#filteredResultsSection').hide();
+                    updateAnalysis();
+                }
+            });
+
+            updateAnalysis();
+        });
+
+        async function updateAnalysis() {
+            if (currentMode === 'custom') {
+                // Check if any filters are selected
+                const selectedFilters = getSelectedFilters();
+                if (selectedFilters.length === 0) {
+                    alert('Please select at least one technology category to analyze.');
+                    return;
+                }
+                await updateFilteredAnalysis(selectedFilters);
+            } else {
+                await updateOverviewAnalysis();
+            }
+        }
+
+        async function updateOverviewAnalysis() {
+            showLoading(true);
+            $('#filteredResultsSection').hide();
+
+            const startYear = parseInt($('#startYear').val());
+            const endYear = parseInt($('#endYear').val());
+            currentView = $('#viewType').val();
+
+            try {
+                // Show main sections, hide filtered results
+                $('.row').not('#filteredResultsSection .row').show();
+
+                // Fetch aggregated data
+                const marketData = await fetchMarketDynamics(startYear, endYear);
+                currentData = marketData;
+
+                // Update metrics
+                updateMetrics(marketData);
+
+                // Update main visualization based on selected view
+                updateMainVisualization(currentView, marketData);
+
+                // Update growth cards
+                updateTechGrowthCards(marketData.topGrowthAreas);
+
+                // Fetch and update innovators data
+                const innovatorsData = await fetchInnovatorsData(startYear, endYear);
+                fullDataCache.innovators = innovatorsData;
+                updateInnovatorsVisualizations(innovatorsData);
+
+                // Generate insights
+                generateStrategicInsights(marketData, innovatorsData);
+
+            } catch (error) {
+                console.error('Error updating analysis:', error);
+                alert('Failed to update analysis. Please try again.');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function updateFilteredAnalysis(selectedCategories) {
+            showLoading(true);
+
+            const startYear = parseInt($('#startYear').val());
+            const endYear = parseInt($('#endYear').val());
+
+            try {
+                // Hide main sections, show filtered results
+                $('.row').not('.metric-card:first').not('#filteredResultsSection .row').hide();
+                $('#filteredResultsSection').show();
+
+                // Display selected filters
+                $('#selectedFiltersDisplay').html(
+                    '<strong>Selected Categories:</strong> ' +
+                    selectedCategories.join(' | ')
+                );
+
+                // Fetch filtered data
+                const response = await fetch('/StrategicAnalysis/GetFilteredTechnologyData', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        selectedCategories: selectedCategories,
+                        startYear: startYear,
+                        endYear: endYear
+                    })
+                });
+
+                const data = await response.json();
+                filteredDataCache = data;
+
+                // Update filtered metrics
+                updateFilteredMetrics(data);
+
+                // Create filtered visualizations
+                createFilteredTrendChart(data.yearlyTrends);
+                createFilteredInnovatorsChart(data.topInnovators);
+                updateFilteredPatentsList(data.patentData);
+
+            } catch (error) {
+                console.error('Error updating filtered analysis:', error);
+                alert('Failed to update filtered analysis. Please try again.');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function getSelectedFilters() {
+            const selected = [];
+            $('.tech-filter:checked').each(function () {
+                selected.push($(this).val());
+            });
+            return selected;
+        }
+
+        function selectAllFilters() {
+            $('.tech-filter').prop('checked', true);
+        }
+
+        function clearAllFilters() {
+            $('.tech-filter').prop('checked', false);
+        }
+
+        function updateFilteredMetrics(data) {
+            // Total patents
+            $('#filteredTotalPatents').text(data.totalPatents ? data.totalPatents.toLocaleString() : '0');
+
+            // Growth rate
+            if (data.growthMetrics && data.growthMetrics.CAGR) {
+                $('#filteredGrowthRate').html(
+                    data.growthMetrics.CAGR > 0
+                        ? `<span class="growth-positive">+${data.growthMetrics.CAGR}%</span>`
+                        : `<span class="growth-negative">${data.growthMetrics.CAGR}%</span>`
+                );
+            } else {
+                $('#filteredGrowthRate').text('N/A');
+            }
+
+            // Top innovator
+            if (data.topInnovators && data.topInnovators.length > 0) {
+                $('#filteredTopInnovator').text(
+                    data.topInnovators[0].name.substring(0, 25) +
+                    (data.topInnovators[0].name.length > 25 ? '...' : '')
+                );
+            } else {
+                $('#filteredTopInnovator').text('N/A');
+            }
+        }
+
+        function createFilteredTrendChart(yearlyTrends) {
+            if (!yearlyTrends || Object.keys(yearlyTrends).length === 0) return;
+
+            const years = Object.keys(yearlyTrends).sort();
+            const counts = years.map(year => yearlyTrends[year]);
+
+            const data = [{
+                x: years,
+                y: counts,
+                type: 'scatter',
+                mode: 'lines+markers',
+                line: {
+                    color: '#3498db',
+                    width: 3
+                },
+                marker: {
+                    size: 8
+                },
+                fill: 'tozeroy',
+                fillcolor: 'rgba(52, 152, 219, 0.2)'
+            }];
+
+            const layout = {
+                xaxis: { title: 'Year' },
+                yaxis: { title: 'Patent Count' },
+                margin: { t: 20, r: 20, b: 40, l: 50 },
+                hovermode: 'x unified'
+            };
+
+            Plotly.newPlot('filteredTrendChart', data, layout, { responsive: true });
+        }
+
+        function createFilteredInnovatorsChart(innovators) {
+            if (!innovators || innovators.length === 0) return;
+
+            const topInnovators = innovators.slice(0, 15);
+
+            const data = [{
+                type: 'scatter',
+                x: topInnovators.map((_, i) => i % 5),
+                y: topInnovators.map((_, i) => Math.floor(i / 5)),
+                mode: 'markers+text',
+                text: topInnovators.map(i =>
+                    i.name.length > 20 ? i.name.substring(0, 20) + '...' : i.name
+                ),
+                textposition: 'middle center',
+                marker: {
+                    size: topInnovators.map(i => Math.sqrt(i.patentCount) * 8),
+                    color: topInnovators.map(i =>
+                        i.type === 'University' ? '#9b59b6' :
+                            i.type === 'Company' ? '#3498db' : '#95a5a6'
+                    ),
+                    opacity: 0.7
+                },
+                hovertemplate: topInnovators.map(i =>
+                    `<b>${i.name}</b><br>${i.type}<br>${i.patentCount} patents<extra></extra>`
+                )
+            }];
+
+            const layout = {
+                xaxis: { showgrid: false, zeroline: false, showticklabels: false },
+                yaxis: { showgrid: false, zeroline: false, showticklabels: false },
+                margin: { t: 20, r: 20, b: 20, l: 20 },
+                hovermode: 'closest',
+                showlegend: false
+            };
+
+            Plotly.newPlot('filteredInnovatorsChart', data, layout, { responsive: true });
+        }
+
+        function updateFilteredPatentsList(patents) {
+            const tbody = $('#filteredPatentsList');
+            tbody.empty();
+
+            if (!patents || patents.length === 0) {
+                tbody.append('<tr><td colspan="4" class="text-center">No patents to display</td></tr>');
+                return;
+            }
+
+            patents.slice(0, 10).forEach(patent => {
+                const row = `
+                        <tr>
+                            <td>${patent.patentId}</td>
+                            <td>${patent.title ? patent.title.substring(0, 80) + (patent.title.length > 80 ? '...' : '') : ''}</td>
+                            <td>${patent.date ? new Date(patent.date).toLocaleDateString() : ''}</td>
+                            <td>${patent.assignee ? patent.assignee.substring(0, 40) + (patent.assignee.length > 40 ? '...' : '') : 'N/A'}</td>
+                        </tr>
+                    `;
+                tbody.append(row);
+            });
+        }
+
+        async function downloadFilteredData() {
+            if (!filteredDataCache || !filteredDataCache.yearlyTrends) {
+                alert('No data to download');
+                return;
+            }
+
+            // Prepare CSV
+            let csv = 'Category,Year,Value\n';
+
+            // Add yearly trends
+            Object.entries(filteredDataCache.yearlyTrends).forEach(([year, count]) => {
+                csv += `Patent Count,${year},${count}\n`;
+            });
+
+            // Add innovators
+            if (filteredDataCache.topInnovators) {
+                csv += '\nInnovator,Type,Patent Count\n';
+                filteredDataCache.topInnovators.forEach(innovator => {
+                    csv += `"${innovator.name}",${innovator.type},${innovator.patentCount}\n`;
+                });
+            }
+
+            // Download
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `filtered_patent_analysis_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Keep all the existing functions from the previous version
+        async function fetchMarketDynamics(startYear, endYear) {
+            const response = await fetch('/StrategicAnalysis/GetMarketDynamics', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    startYear: startYear,
+                    endYear: endYear,
+                    technologyAreas: []
+                })
+            });
+
+            return await response.json();
+        }
+
+        async function fetchInnovatorsData(startYear, endYear) {
+            const response = await fetch('/StrategicAnalysis/GetInventorsAndAssignees', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    startYear: startYear,
+                    endYear: endYear
+                })
+            });
+
+            return await response.json();
+        }
+
+        // Include all the visualization functions from the original
+        function updateMainVisualization(viewType, data) {
+            $('#heatmapView, #treemapView, #sunburstView, #bubbleView').hide();
+
+            switch (viewType) {
+                case 'heatmap':
+                    $('#vizTitle').text('Technology Innovation Heatmap');
+                    $('#vizDescription').text('Patent intensity across technology areas and years');
+                    $('#heatmapView').show();
+                    createHeatmap(data);
+                    break;
+                case 'treemap':
+                    $('#vizTitle').text('Technology Hierarchy');
+                    $('#vizDescription').text('Proportional view of patent distribution');
+                    $('#treemapView').show();
+                    createTreemap(data);
+                    break;
+                case 'sunburst':
+                    $('#vizTitle').text('Innovation Sunburst');
+                    $('#vizDescription').text('Hierarchical view of technology relationships');
+                    $('#sunburstView').show();
+                    createSunburst(data);
+                    break;
+                case 'bubble':
+                    $('#vizTitle').text('Growth Bubble Chart');
+                    $('#vizDescription').text('Size represents patent count, position shows growth');
+                    $('#bubbleView').show();
+                    createBubbleChart(data);
+                    break;
+            }
+        }
+
+        function createHeatmap(data) {
+            if (!data.topGrowthAreas || data.topGrowthAreas.length === 0) return;
+
+            const topAreas = data.topGrowthAreas.slice(0, 10);
+            const technologies = topAreas.map(area => area.technologyArea);
+            const years = [];
+            const z = [];
+
+            if (topAreas[0].yearlyTrend && topAreas[0].yearlyTrend.length > 0) {
+                const startYear = parseInt($('#startYear').val());
+                for (let i = 0; i < topAreas[0].yearlyTrend.length; i++) {
+                    years.push(startYear + i);
+                }
+            }
+
+            topAreas.forEach(area => {
+                if (area.yearlyTrend && area.yearlyTrend.length > 0) {
+                    z.push(area.yearlyTrend);
+                }
+            });
+
+            const heatmapData = [{
+                x: years,
+                y: technologies,
+                z: z,
+                type: 'heatmap',
+                colorscale: 'Viridis',
+                hovertemplate: '<b>%{y}</b><br>Year: %{x}<br>Patents: %{z}<extra></extra>'
+            }];
+
+            const layout = {
+                title: '',
+                xaxis: { title: 'Year' },
+                yaxis: { title: 'Technology Area', automargin: true },
+                height: 500,
+                margin: { l: 200 }
+            };
+
+            Plotly.newPlot('heatmapView', heatmapData, layout, { responsive: true });
+        }
+
+        function createTreemap(data) {
+            if (!data.topGrowthAreas || data.topGrowthAreas.length === 0) return;
+
+            const validAreas = data.topGrowthAreas.filter(area => area.totalPatents > 0);
+
+            const treemapData = [{
+                type: 'treemap',
+                labels: validAreas.map(area => area.technologyArea),
+                parents: validAreas.map(() => 'Technologies'),
+                values: validAreas.map(area => area.totalPatents),
+                text: validAreas.map(area => `${area.totalPatents.toLocaleString()} patents<br>${area.growthRate >= 0 ? '+' : ''}${area.growthRate}% growth`),
+                textinfo: 'label+text',
+                marker: {
+                    colors: validAreas.map(area => area.growthRate),
+                    colorscale: 'RdYlGn',
+                    showscale: true,
+                    cmin: Math.min(...validAreas.map(a => a.growthRate)),
+                    cmax: Math.max(...validAreas.map(a => a.growthRate)),
+                    colorbar: {
+                        title: 'Growth Rate %'
+                    }
+                },
+                hovertemplate: '<b>%{label}</b><br>Patents: %{value:,.0f}<br>Growth: %{color:.1f}%<extra></extra>'
+            }];
+
+            treemapData[0].labels.unshift('Technologies');
+            treemapData[0].parents.unshift('');
+            treemapData[0].values.unshift(0);
+            treemapData[0].text.unshift('');
+
+            const layout = {
+                margin: { t: 0, l: 0, r: 0, b: 0 },
+                height: 500
+            };
+
+            Plotly.newPlot('treemapView', treemapData, layout, { responsive: true });
+        }
+
+        function createSunburst(data) {
+            if (!data.topGrowthAreas || data.topGrowthAreas.length === 0) return;
+
+            const validAreas = data.topGrowthAreas.filter(area => area.totalPatents > 0);
+
+            const sunburstData = [{
+                type: 'sunburst',
+                labels: ['All Technologies'],
+                parents: [''],
+                values: [validAreas.reduce((sum, area) => sum + area.totalPatents, 0)],
+                text: [`Total: ${validAreas.reduce((sum, area) => sum + area.totalPatents, 0).toLocaleString()} patents`],
+                marker: { colors: ['#ffffff'] },
+                hovertemplate: '%{label}<br>%{text}<extra></extra>'
+            }];
+
+            const highGrowth = validAreas.filter(a => a.growthRate > 30);
+            const mediumGrowth = validAreas.filter(a => a.growthRate > 10 && a.growthRate <= 30);
+            const lowGrowth = validAreas.filter(a => a.growthRate <= 10);
+
+            if (highGrowth.length > 0) {
+                const highGrowthTotal = highGrowth.reduce((sum, a) => sum + a.totalPatents, 0);
+                sunburstData[0].labels.push('High Growth (>30%)');
+                sunburstData[0].parents.push('All Technologies');
+                sunburstData[0].values.push(highGrowthTotal);
+                sunburstData[0].text.push(`${highGrowth.length} technologies, ${highGrowthTotal.toLocaleString()} patents`);
+                sunburstData[0].marker.colors.push('#2ecc71');
+
+                highGrowth.forEach(area => {
+                    sunburstData[0].labels.push(area.technologyArea);
+                    sunburstData[0].parents.push('High Growth (>30%)');
+                    sunburstData[0].values.push(area.totalPatents);
+                    sunburstData[0].text.push(`${area.totalPatents.toLocaleString()} patents, ${area.growthRate}% growth`);
+                    sunburstData[0].marker.colors.push('#27ae60');
+                });
+            }
+
+            if (mediumGrowth.length > 0) {
+                const mediumGrowthTotal = mediumGrowth.reduce((sum, a) => sum + a.totalPatents, 0);
+                sunburstData[0].labels.push('Medium Growth (10-30%)');
+                sunburstData[0].parents.push('All Technologies');
+                sunburstData[0].values.push(mediumGrowthTotal);
+                sunburstData[0].text.push(`${mediumGrowth.length} technologies, ${mediumGrowthTotal.toLocaleString()} patents`);
+                sunburstData[0].marker.colors.push('#f39c12');
+
+                mediumGrowth.forEach(area => {
+                    sunburstData[0].labels.push(area.technologyArea);
+                    sunburstData[0].parents.push('Medium Growth (10-30%)');
+                    sunburstData[0].values.push(area.totalPatents);
+                    sunburstData[0].text.push(`${area.totalPatents.toLocaleString()} patents, ${area.growthRate}% growth`);
+                    sunburstData[0].marker.colors.push('#e67e22');
+                });
+            }
+
+            if (lowGrowth.length > 0) {
+                const lowGrowthTotal = lowGrowth.reduce((sum, a) => sum + a.totalPatents, 0);
+                sunburstData[0].labels.push('Stable (<10%)');
+                sunburstData[0].parents.push('All Technologies');
+                sunburstData[0].values.push(lowGrowthTotal);
+                sunburstData[0].text.push(`${lowGrowth.length} technologies, ${lowGrowthTotal.toLocaleString()} patents`);
+                sunburstData[0].marker.colors.push('#3498db');
+
+                lowGrowth.forEach(area => {
+                    sunburstData[0].labels.push(area.technologyArea);
+                    sunburstData[0].parents.push('Stable (<10%)');
+                    sunburstData[0].values.push(area.totalPatents);
+                    sunburstData[0].text.push(`${area.totalPatents.toLocaleString()} patents, ${area.growthRate}% growth`);
+                    sunburstData[0].marker.colors.push('#2980b9');
+                });
+            }
+
+            const layout = {
+                margin: { t: 0, l: 0, r: 0, b: 0 },
+                height: 500
+            };
+
+            Plotly.newPlot('sunburstView', sunburstData, layout, { responsive: true });
+        }
+
+        function createBubbleChart(data) {
+            if (!data.topGrowthAreas || data.topGrowthAreas.length === 0) return;
+
+            const validAreas = data.topGrowthAreas.filter(area => area.totalPatents > 0);
+
+            const bubbleData = [{
+                x: validAreas.map(area => area.growthRate),
+                y: validAreas.map(area => area.totalPatents),
+                mode: 'markers+text',
+                text: validAreas.map(area => area.technologyArea.length > 15 ?
+                    area.technologyArea.substring(0, 15) + '...' : area.technologyArea),
+                textposition: 'middle center',
+                marker: {
+                    size: validAreas.map(area => Math.sqrt(area.totalPatents) * 3),
+                    color: validAreas.map(area => area.growthRate),
+                    colorscale: 'Viridis',
+                    showscale: true,
+                    colorbar: {
+                        title: 'Growth Rate %'
+                    },
+                    opacity: 0.7
+                },
+                hovertemplate: '<b>%{text}</b><br>Growth: %{x:.1f}%<br>Patents: %{y:,.0f}<extra></extra>'
+            }];
+
+            const layout = {
+                xaxis: {
+                    title: 'Growth Rate (%)',
+                    zeroline: true
+                },
+                yaxis: {
+                    title: 'Total Patents',
+                    type: 'log',
+                    rangemode: 'tozero'
+                },
+                height: 500,
+                hovermode: 'closest'
+            };
+
+            Plotly.newPlot('bubbleView', bubbleData, layout, { responsive: true });
+        }
+
+        function updateMetrics(data) {
+            const totalPatents = data.topGrowthAreas.reduce((sum, area) => sum + area.totalPatents, 0);
+            $('#totalPatents').text(totalPatents.toLocaleString());
+
+            const validGrowthRates = data.topGrowthAreas.filter(area => area.totalPatents > 10);
+            const avgGrowth = validGrowthRates.length > 0
+                ? validGrowthRates.reduce((sum, area) => sum + area.growthRate, 0) / validGrowthRates.length
+                : 0;
+
+            if (avgGrowth !== 0 && !isNaN(avgGrowth)) {
+                $('#growthRate').html(avgGrowth > 0
+                    ? `<span class="growth-positive">+${avgGrowth.toFixed(1)}%</span>`
+                    : `<span class="growth-negative">${avgGrowth.toFixed(1)}%</span>`);
+            } else {
+                $('#growthRate').text('N/A');
+            }
+
+            const emergingCount = data.topGrowthAreas.filter(area => area.growthRate > 30 && area.totalPatents > 20).length;
+            $('#emergingAreas').text(emergingCount);
+        }
+
+        function updateTechGrowthCards(growthAreas) {
+            const container = $('#techGrowthCards');
+            container.empty();
+
+            const validAreas = growthAreas
+                .filter(area => area.totalPatents > 0)
+                .sort((a, b) => b.totalPatents - a.totalPatents)
+                .slice(0, 6);
+
+            validAreas.forEach(area => {
+                const growthClass = area.growthRate > 30 ? 'danger' : area.growthRate > 10 ? 'warning' : 'info';
+                const growthText = area.growthRate >= 0 ? `+${area.growthRate}%` : `${area.growthRate}%`;
+                const card = `
+                        <div class="col-md-4 mb-3">
+                            <div class="tech-card">
+                                <h6>${area.technologyArea}</h6>
+                                <div class="d-flex justify-content-between align-items-center mt-2">
+                                    <span class="text-muted">${area.totalPatents.toLocaleString()} patents</span>
+                                    <span class="badge badge-${growthClass}">${growthText}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                container.append(card);
+            });
+        }
+
+        function updateInnovatorsVisualizations(data) {
+            createInnovatorsDonut(data);
+            createInnovatorsBubble(data);
+            createInnovatorsSummary(data);
+
+            if (data.companies && data.companies.length > 0) {
+                $('#topCompany').text(data.companies[0].name.substring(0, 20) +
+                    (data.companies[0].name.length > 20 ? '...' : ''));
+            }
+        }
+
+        function createInnovatorsDonut(data) {
+            const totalUniPatents = data.universities ?
+                data.universities.reduce((sum, u) => sum + u.patents, 0) : 0;
+            const totalCorpPatents = data.companies ?
+                data.companies.reduce((sum, c) => sum + c.patents, 0) : 0;
+
+            const donutData = [{
+                values: [totalUniPatents, totalCorpPatents],
+                labels: ['Universities', 'Companies'],
+                type: 'pie',
+                hole: .6,
+                marker: {
+                    colors: ['#9b59b6', '#3498db']
+                },
+                textposition: 'outside',
+                textinfo: 'label+percent',
+                hovertemplate: '%{label}<br>%{value:,.0f} patents<br>%{percent}<extra></extra>'
+            }];
+
+            const layout = {
+                showlegend: true,
+                height: 400,
+                annotations: [{
+                    font: { size: 20 },
+                    showarrow: false,
+                    text: `${(totalUniPatents + totalCorpPatents).toLocaleString()}<br>Total`,
+                    x: 0.5,
+                    y: 0.5
+                }]
+            };
+
+            Plotly.newPlot('innovatorsDonut', donutData, layout, { responsive: true });
+        }
+
+        function createInnovatorsBubble(data) {
+            const allInnovators = [];
+
+            if (data.universities) {
+                data.universities.slice(0, 10).forEach(u => {
+                    allInnovators.push({
+                        name: u.name.substring(0, 30),
+                        patents: u.patents,
+                        type: 'University',
+                        color: '#9b59b6'
+                    });
+                });
+            }
+
+            if (data.companies) {
+                data.companies.slice(0, 10).forEach(c => {
+                    allInnovators.push({
+                        name: c.name.substring(0, 30),
+                        patents: c.patents,
+                        type: 'Company',
+                        color: '#3498db'
+                    });
+                });
+            }
+
+            allInnovators.sort((a, b) => b.patents - a.patents);
+
+            const bubbleData = [{
+                x: allInnovators.map((_, i) => i % 5),
+                y: allInnovators.map((_, i) => Math.floor(i / 5)),
+                mode: 'markers+text',
+                text: allInnovators.map(i => i.name),
+                textposition: 'middle center',
+                marker: {
+                    size: allInnovators.map(i => Math.sqrt(i.patents) * 5),
+                    color: allInnovators.map(i => i.color),
+                    opacity: 0.7
+                },
+                hovertemplate: allInnovators.map(i =>
+                    `<b>${i.name}</b><br>${i.type}<br>${i.patents} patents<extra></extra>`)
+            }];
+
+            const layout = {
+                xaxis: { showgrid: false, zeroline: false, showticklabels: false },
+                yaxis: { showgrid: false, zeroline: false, showticklabels: false },
+                height: 400,
+                hovermode: 'closest',
+                showlegend: false
+            };
+
+            Plotly.newPlot('innovatorsBubble', bubbleData, layout, { responsive: true });
+        }
+
+        function createInnovatorsSummary(data) {
+            const container = $('#inventorsSummary');
+            container.empty();
+
+            const topUnis = data.universities ? data.universities.slice(0, 3) : [];
+            let uniCard = `
+                    <div class="col-md-4">
+                        <h6>Top Universities</h6>
+                        <div class="list-group">`;
+
+            topUnis.forEach((uni, idx) => {
+                uniCard += `
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>${idx + 1}. ${uni.name.substring(0, 25)}${uni.name.length > 25 ? '...' : ''}</span>
+                            <span class="badge badge-purple">${uni.patents}</span>
+                        </div>`;
+            });
+
+            uniCard += `</div></div>`;
+            container.append(uniCard);
+
+            const topComps = data.companies ? data.companies.slice(0, 3) : [];
+            let compCard = `
+                    <div class="col-md-4">
+                        <h6>Top Companies</h6>
+                        <div class="list-group">`;
+
+            topComps.forEach((comp, idx) => {
+                compCard += `
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>${idx + 1}. ${comp.name.substring(0, 25)}${comp.name.length > 25 ? '...' : ''}</span>
+                            <span class="badge badge-primary">${comp.patents}</span>
+                        </div>`;
+            });
+
+            compCard += `</div></div>`;
+            container.append(compCard);
+
+            const topInventors = data.inventors ? data.inventors.slice(0, 3) : [];
+            let invCard = `
+                    <div class="col-md-4">
+                        <h6>Top Individual Inventors</h6>
+                        <div class="list-group">`;
+
+            topInventors.forEach((inv, idx) => {
+                invCard += `
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>${idx + 1}. ${inv.name.substring(0, 25)}${inv.name.length > 25 ? '...' : ''}</span>
+                            <span class="badge badge-success">${inv.patents}</span>
+                        </div>`;
+            });
+
+            invCard += `</div></div>`;
+            container.append(invCard);
+        }
+
+        async function downloadFullData() {
+            const startYear = parseInt($('#startYear').val());
+            const endYear = parseInt($('#endYear').val());
+
+            let csvContent = "Category,Name,Patents,Additional Info\n";
+
+            if (currentData.topGrowthAreas) {
+                currentData.topGrowthAreas.forEach(area => {
+                    csvContent += `Technology,"${area.technologyArea}",${area.totalPatents},"Growth: ${area.growthRate}%"\n`;
+                });
+            }
+
+            if (fullDataCache.innovators && fullDataCache.innovators.universities) {
+                fullDataCache.innovators.universities.forEach(uni => {
+                    csvContent += `University,"${uni.name}",${uni.patents},"Academic Institution"\n`;
+                });
+            }
+
+            if (fullDataCache.innovators && fullDataCache.innovators.companies) {
+                fullDataCache.innovators.companies.forEach(comp => {
+                    csvContent += `Company,"${comp.name}",${comp.patents},"Corporate Entity"\n`;
+                });
+            }
+
+            if (fullDataCache.innovators && fullDataCache.innovators.inventors) {
+                fullDataCache.innovators.inventors.forEach(inv => {
+                    csvContent += `Inventor,"${inv.name}",${inv.patents},"${inv.location} - ${inv.assignee}"\n`;
+                });
+            }
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `patent_analysis_${startYear}_${endYear}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        function generateStrategicInsights(marketData, innovatorsData) {
+            const insights = $('#strategicInsights');
+            insights.empty();
+
+            const topGrowth = marketData.topGrowthAreas
+                .filter(area => area.totalPatents > 50)
+                .sort((a, b) => b.growthRate - a.growthRate)[0];
+
+            if (topGrowth && topGrowth.growthRate > 20) {
+                insights.append(`
+                        <div class="alert alert-success">
+                            <h6><i class="fas fa-rocket"></i> Highest Growth Opportunity</h6>
+                            <p><strong>${topGrowth.technologyArea}</strong> shows strong growth at ${topGrowth.growthRate.toFixed(1)}% annually with ${topGrowth.totalPatents.toLocaleString()} total patents.</p>
+                            <p><strong>Recommendation:</strong> Develop fast-track certificate program (6-9 months) focusing on practical applications.</p>
+                        </div>
+                    `);
+            }
+
+            if (innovatorsData.universities && innovatorsData.universities.length > 0) {
+                const topUni = innovatorsData.universities[0];
+                insights.append(`
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-university"></i> Academic Partnership Opportunity</h6>
+                            <p><strong>${topUni.name}</strong> leads universities with ${topUni.patents.toLocaleString()} patents.</p>
+                            <p><strong>Recommendation:</strong> Explore joint program development or knowledge transfer partnerships.</p>
+                        </div>
+                    `);
+            }
+
+            if (innovatorsData.companies && innovatorsData.companies.length > 0) {
+                const topCompany = innovatorsData.companies[0];
+                insights.append(`
+                        <div class="alert alert-warning">
+                            <h6><i class="fas fa-building"></i> Industry Leader Insight</h6>
+                            <p><strong>${topCompany.name}</strong> dominates with ${topCompany.patents.toLocaleString()} patents.</p>
+                            <p><strong>Recommendation:</strong> Design programs aligned with industry leader's technology focus for better job placement.</p>
+                        </div>
+                    `);
+            }
+
+            const emergingTech = marketData.topGrowthAreas.filter(a => a.growthRate > 30 && a.totalPatents > 20);
+            if (emergingTech.length >= 2) {
+                insights.append(`
+                        <div class="alert alert-primary">
+                            <h6><i class="fas fa-chart-line"></i> Multiple High-Growth Areas</h6>
+                            <p>${emergingTech.length} technologies showing >30% growth: ${emergingTech.slice(0, 3).map(t => t.technologyArea).join(', ')}${emergingTech.length > 3 ? '...' : ''}.</p>
+                            <p><strong>Recommendation:</strong> Consider modular program design allowing students to combine emerging technologies.</p>
+                        </div>
+                    `);
+            }
+        }
+
+        function getColorForIndex(index) {
+            const colors = [
+                '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
+                '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E2'
+            ];
+            return colors[index % colors.length];
+        }
+
+        function showLoading(show) {
+            $('#loadingOverlay').css('display', show ? 'flex' : 'none');
+        }
+
+        $('#viewType').change(function () {
+            updateMainVisualization($(this).val(), currentData);
+        });</script>
+
+    <style>
+        .badge-purple {
+            background-color: #9b59b6;
+            color: white;
+        }
+
+        .list-group-item {
+            padding: 0.5rem 0.75rem;
+            border: none;
+            background-color: #f8f9fa;
+            margin-bottom: 0.25rem;
+        }
+
+        .form-check {
+            padding: 0.5rem 0;
+        }
+
+        .tech-filter {
+            margin-right: 0.5rem;
+        }
+
+        #customFilterPanel {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 0.25rem;
+            margin-top: 1rem;
+        }
+
+        #filteredResultsSection .metric-card {
+            background-color: #e9ecef;
+        }
+
+        #selectedFiltersDisplay {
+            background-color: white;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.9rem;
+        }
+    </style>
+}

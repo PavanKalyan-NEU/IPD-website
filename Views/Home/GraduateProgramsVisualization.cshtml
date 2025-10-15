@@ -1,0 +1,1288 @@
+﻿@model Northeastern_Personal_Workspace.Models.VisualizationViewModel
+@{
+    ViewData["Title"] = "Graduate Programs - Tabular Layout";
+}
+
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f8f9fa;
+        color: #333;
+    }
+
+    .visualization-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Filter Section Styles */
+    .filter-section {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+
+    .filter-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 15px;
+    }
+
+    .filter-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        align-items: center;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .filter-label {
+        font-size: 14px;
+        font-weight: 500;
+        color: #495057;
+    }
+
+    .course-range-container {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .range-input-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .range-slider {
+        width: 150px;
+        height: 6px;
+        border-radius: 3px;
+        background: #dee2e6;
+        outline: none;
+        -webkit-appearance: none;
+    }
+
+        .range-slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #007bff;
+            cursor: pointer;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .range-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #007bff;
+            cursor: pointer;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+    .range-value {
+        font-size: 12px;
+        font-weight: 600;
+        color: #007bff;
+        min-width: 30px;
+        text-align: center;
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 10px;
+        margin-left: auto;
+    }
+
+    .filter-btn {
+        padding: 8px 16px;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        background-color: #fff;
+        color: #495057;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.2s ease;
+    }
+
+        .filter-btn:hover {
+            background-color: #f8f9fa;
+            border-color: #adb5bd;
+        }
+
+        .filter-btn.export {
+            background-color: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+
+            .filter-btn.export:hover {
+                background-color: #218838;
+                border-color: #1e7e34;
+            }
+
+    .filter-status {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        background-color: #e3f2fd;
+        border: 1px solid #90caf9;
+        border-radius: 4px;
+        font-size: 14px;
+        color: #1565c0;
+        font-weight: 500;
+    }
+
+    .header-section {
+        text-align: center;
+        margin-bottom: 30px;
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 20px;
+    }
+
+    .program-count {
+        font-size: 14px;
+        color: #6c757d;
+        margin-bottom: 10px;
+    }
+
+    .data-source {
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .data-source-success {
+        color: #28a745;
+    }
+
+    .data-source-error {
+        color: #dc3545;
+    }
+
+    .complexity-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #495057;
+    }
+
+    .programs-section {
+        margin-bottom: 40px;
+    }
+
+    .section-header {
+        background-color: #f8f9fa;
+        padding: 12px 20px;
+        border-left: 4px solid #8B0000;
+        margin-bottom: 20px;
+    }
+
+        .section-header h2 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+    .complexity-grid {
+        width: 100%;
+        overflow-x: auto;
+        border: 1px solid #dee2e6;
+        position: relative;
+    }
+
+    .complexity-header-container {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background-color: white;
+    }
+
+    .complexity-names-row {
+        display: flex;
+        min-width: 1200px;
+        background-color: #e9ecef;
+    }
+
+    .complexity-name {
+        padding: 8px 15px;
+        text-align: center;
+        font-weight: 700;
+        font-size: 15px;
+        background-color: #e9ecef;
+        border-right: 1px solid #dee2e6;
+        color: #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .complexity-name.basic {
+            flex: 1;
+        }
+
+        .complexity-name.developer {
+            flex: 2;
+        }
+
+        .complexity-name.proficient {
+            flex: 2;
+        }
+
+        .complexity-name.mastery {
+            flex: 1;
+            border-right: none;
+        }
+
+    .complexity-ranges-row {
+        display: flex;
+        min-width: 1200px;
+        background-color: #f8f9fa;
+    }
+
+    .complexity-range {
+        flex: 1;
+        padding: 8px 15px;
+        text-align: center;
+        font-weight: 600;
+        font-size: 13px;
+        background-color: #f8f9fa;
+        border-right: 1px solid #dee2e6;
+        color: #495057;
+    }
+
+        .complexity-range:last-child {
+            border-right: none;
+        }
+
+    .complexity-columns {
+        display: flex;
+        min-width: 1200px;
+        background-color: #e9ecef;
+    }
+
+    .complexity-column {
+        flex: 1;
+        min-width: 200px;
+        background-color: white;
+        border-right: 1px solid #dee2e6;
+    }
+
+        .complexity-column:last-child {
+            border-right: none;
+        }
+
+    .program-cards {
+        padding: 10px;
+        min-height: 500px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        align-items: center;
+    }
+
+    .program-card {
+        width: 180px;
+        border-radius: 4px;
+        padding: 8px 10px;
+        color: white;
+        font-size: 11px;
+        line-height: 1.3;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        cursor: pointer;
+        margin-bottom: 2px;
+    }
+
+        .program-card:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+        }
+
+        .program-card.filtered-out {
+            display: none !important;
+        }
+
+    .program-title {
+        font-weight: 600;
+        margin-bottom: 4px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 12px;
+    }
+
+    .program-details {
+        font-size: 10px;
+        opacity: 0.9;
+        font-weight: 400;
+    }
+
+    .masters-card {
+        background-color: #8B0000;
+    }
+
+    .certificate-card {
+        background-color: #C00000;
+    }
+
+    .phd-card {
+        background-color: ##590000;
+    }
+
+    .legend-section {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-top: 30px;
+        padding: 20px;
+        border-top: 2px solid #e9ecef;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: #495057;
+    }
+
+    .legend-color {
+        width: 20px;
+        height: 15px;
+        border-radius: 3px;
+        border: 1px solid #dee2e6;
+    }
+
+    .legend-size-large {
+        width: 25px;
+        height: 15px;
+        background-color: #8B0000;
+        border-radius: 3px;
+    }
+
+    .legend-size-medium {
+        width: 20px;
+        height: 12px;
+        background-color: #8B0000;
+        border-radius: 3px;
+    }
+
+    .legend-size-small {
+        width: 15px;
+        height: 9px;
+        background-color: #8B0000;
+        border-radius: 3px;
+    }
+
+    .refresh-btn {
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        z-index: 1000;
+        background-color: #8B0000;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 12px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+        .refresh-btn:hover {
+            background-color: #660000;
+        }
+
+    .error-message {
+        color: #dc3545;
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        border-radius: 4px;
+        padding: 15px;
+        margin: 20px 0;
+        text-align: center;
+    }
+
+    .empty-column {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100px;
+        color: #6c757d;
+        font-style: italic;
+        font-size: 12px;
+    }
+
+    .no-data-warning {
+        text-align: center;
+        padding: 40px;
+        background-color: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 8px;
+        color: #856404;
+        margin: 20px 0;
+    }
+
+    .debug-info {
+        background-color: #e2e3e5;
+        border: 1px solid #d6d8db;
+        border-radius: 4px;
+        padding: 10px;
+        margin: 10px 0;
+        font-size: 12px;
+        color: #6c757d;
+    }
+
+    .success-indicator {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        border-radius: 4px;
+        padding: 10px;
+        margin: 10px 0;
+        color: #155724;
+        text-align: center;
+    }
+
+    .perfect-indicator {
+        background-color: #d1ecf1;
+        border: 1px solid #bee5eb;
+        border-radius: 4px;
+        padding: 10px;
+        margin: 10px 0;
+        color: #0c5460;
+        text-align: center;
+        font-weight: 600;
+    }
+
+    .warning-indicator {
+        background-color: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 4px;
+        padding: 10px;
+        margin: 10px 0;
+        color: #856404;
+        text-align: center;
+    }
+
+    /* Responsive Design */
+    @@media (max-width: 768px) {
+        .filter-controls {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .course-range-container {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .complexity-columns, .complexity-names-row, .complexity-ranges-row {
+            min-width: 800px;
+        }
+
+        .complexity-column {
+            min-width: 130px;
+        }
+
+        .program-card {
+            width: 120px;
+            font-size: 10px;
+            padding: 6px 8px;
+        }
+
+        .program-title {
+            font-size: 11px;
+        }
+
+        .program-details {
+            font-size: 9px;
+        }
+    }
+
+    /* Modal styles for program details */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 2000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.4);
+    }
+
+    .modal-content {
+        background-color: #fefefe;
+        margin: 10% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 60%;
+        max-width: 600px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    }
+
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+        .close:hover {
+            color: black;
+        }
+
+    .program-details-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+    }
+
+        .program-details-table th {
+            text-align: left;
+            padding: 8px;
+            background-color: #f1f3f4;
+        }
+
+        .program-details-table td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .program-details-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+</style>
+
+<div class="visualization-container">
+    <!-- Refresh Button -->
+    <button class="refresh-btn" onclick="window.location.reload()" title="Refresh Data">
+        🔄 Refresh
+    </button>
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <div class="filter-title">Visualization Filters</div>
+        <div class="filter-controls">
+            <div class="course-range-container">
+                <div class="range-input-group">
+                    <label class="filter-label">Min Courses: <span id="minCourseValue">1</span></label>
+                    <input type="range" id="minCourseSlider" class="range-slider" min="1" max="30" value="1" oninput="updateMinCourse(this.value)">
+                </div>
+                <div class="range-input-group">
+                    <label class="filter-label">Max Courses: <span id="maxCourseValue">30</span></label>
+                    <input type="range" id="maxCourseSlider" class="range-slider" min="1" max="30" value="30" oninput="updateMaxCourse(this.value)">
+                </div>
+            </div>
+
+            <div class="filter-actions">
+                <button class="filter-btn" onclick="resetFilters()">Reset Filters</button>
+                <button class="filter-btn export" onclick="exportData()">Export Data</button>
+                <div class="filter-status">
+                    <span>Showing <span id="visibleCount">0</span> of <span id="totalCount">0</span> programs</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="header-section">
+        @if (!string.IsNullOrEmpty(ViewBag.DataSource))
+        {
+            <div class="data-source @(ViewBag.DataSource.ToString().Contains("Graduate Data") && !ViewBag.DataSource.ToString().Contains("Failed") && !ViewBag.DataSource.ToString().Contains("Error") ? "data-source-success" : "data-source-error")">
+                📊 Data Source: @ViewBag.DataSource
+                @if (!string.IsNullOrEmpty(ViewBag.LastUpdated))
+                {
+                    <span>(Last Updated: @ViewBag.LastUpdated)</span>
+                }
+            </div>
+        }
+
+        @{
+            var expectedTotal = (Model.ExpectedTotalPrograms > 0) ? Model.ExpectedTotalPrograms : 43;
+            var expectedMasters = (Model.ExpectedMastersPrograms > 0) ? Model.ExpectedMastersPrograms : 40;
+            var expectedCertificates = (Model.ExpectedCertificatePrograms > 0) ? Model.ExpectedCertificatePrograms : 3;
+            var expectedPhd = (Model.ExpectedPhdPrograms > 0) ? Model.ExpectedPhdPrograms : 0;
+        }
+
+        @if (Model.TotalProgramsCount > 0)
+        {
+            <div class="program-count">
+                Showing @Model.TotalProgramsCount programs with 5+ courses from Google Sheets
+            </div>
+
+            @if (Model.TotalProgramsCount == expectedTotal &&
+             Model.MastersPrograms.Count == expectedMasters &&
+             Model.CertificatePrograms.Count == expectedCertificates &&
+             (Model.PhdPrograms?.Count ?? 0) == expectedPhd)
+            {
+                <div class="perfect-indicator">
+                    <strong>
+                        @Model.MastersPrograms.Count Masters Programs + @Model.CertificatePrograms.Count Certificate Programs
+                        @if ((Model.PhdPrograms?.Count ?? 0) > 0)
+                        {<text> + @(Model.PhdPrograms?.Count ?? 0) PhD Programs</text>}
+                    </strong>
+                </div>
+            }
+            else if (Model.TotalProgramsCount < expectedTotal)
+            {
+                <div class="warning-indicator">
+                    ⚠️ Expected @expectedTotal programs, got @Model.TotalProgramsCount
+                    <br>Masters: @Model.MastersPrograms.Count/@expectedMasters,
+                    Certificates: @Model.CertificatePrograms.Count/@expectedCertificates
+                    @if (expectedPhd > 0)
+                    {<text>, PhD: @(Model.PhdPrograms?.Count ?? 0)/@expectedPhd</text>}
+                    <br><small>Some data may be missing from Google Sheets parsing</small>
+                </div>
+            }
+            else
+            {
+                <div class="success-indicator">
+                    Successfully loaded @Model.MastersPrograms.Count Masters, @Model.CertificatePrograms.Count Certificates
+                    @if ((Model.PhdPrograms?.Count ?? 0) > 0)
+                    {<text>, and @(Model.PhdPrograms?.Count ?? 0) PhD programs</text>}
+                </div>
+            }
+        }
+        else
+        {
+            <div class="program-count">
+                No programs loaded - Google Sheets connection failed
+                <br><small style="color: #dc3545;">
+                    Expected to load @expectedTotal programs
+                    (@expectedMasters Masters + @expectedCertificates Certificates
+                    @if (expectedPhd > 0)
+                    {<text> + @expectedPhd PhD</text>})
+                </small>
+            </div>
+        }
+
+        <div class="complexity-title">
+            Complexity Score (1-4)
+        </div>
+    </div>
+
+    <!-- Error Message -->
+    @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+    {
+        <div class="error-message">
+            <strong>Data Loading Error:</strong><br>
+            @ViewBag.ErrorMessage
+            <br><br>
+            <a href="/Home/DebugGoogleSheets" target="_blank" style="color: #721c24;">🔧 View Debug Information</a>
+        </div>
+    }
+
+    <!-- Show warning if no data -->
+    @if (Model.TotalProgramsCount == 0)
+    {
+        <div class="no-data-warning">
+            <h3>📊 No Data Loaded from Google Sheets</h3>
+            <p>The visualization cannot display programs because no data was retrieved from the Google Sheets.</p>
+            <p><strong>Expected Data:</strong> @expectedTotal programs total (@expectedMasters Masters + @expectedCertificates Certificates@if (expectedPhd > 0) { <text> + @expectedPhd PhD</text> })</p>
+            <p><strong>Troubleshooting steps:</strong></p>
+            <ul style="text-align: left; display: inline-block; margin: 0;">
+                <li>Check if the Google Sheet is published and publicly accessible</li>
+                <li>Verify the sheet URL is correct</li>
+                <li>Ensure your internet connection is working</li>
+                <li>Try refreshing the page</li>
+            </ul>
+            <br><br>
+            <a href="/Home/DebugGoogleSheets" target="_blank" style="background: #ffc107; color: #212529; padding: 8px 16px; text-decoration: none; border-radius: 4px; margin-right: 10px;">🔧 Debug Info</a>
+            <a href="https://docs.google.com/spreadsheets/d/e/2PACX-1vQA00pBsgS8EvPEZFA2j6S_QraXI4G4cg_77m-uKgQ7_990xsfhKvibli0FhtHI5ysIYiJ7_tFpEuT7/pubhtml" target="_blank" style="background: #28a745; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px;">📄 View Google Sheet</a>
+        </div>
+    }
+    else
+    {
+        <!-- Masters Programs Section -->
+        <div class="programs-section">
+            <div class="section-header">
+                <h2>Masters Degrees (MS/MPS/MPH/LLM) - <span id="mastersCount">@Model.MastersPrograms.Count</span> Programs</h2>
+            </div>
+
+            <div class="complexity-grid">
+                <div class="complexity-header-container">
+                    <!-- Complexity Names Row -->
+                    <div class="complexity-names-row">
+                        <div class="complexity-name basic">Basic</div>
+                        <div class="complexity-name developer">Developing</div>
+                        <div class="complexity-name proficient">Proficient</div>
+                        <div class="complexity-name mastery">Mastery</div>
+                    </div>
+                    <!-- Complexity Ranges Row -->
+                    <div class="complexity-ranges-row">
+                        <div class="complexity-range">1.0-1.49</div>
+                        <div class="complexity-range">1.5-1.99</div>
+                        <div class="complexity-range">2.0-2.49</div>
+                        <div class="complexity-range">2.5-2.99</div>
+                        <div class="complexity-range">3.0-3.49</div>
+                        <div class="complexity-range">3.5-4.0</div>
+                    </div>
+                </div>
+
+                <div class="complexity-columns">
+                    @foreach (var bin in Model.ComplexityBins)
+                    {
+                        <div class="complexity-column">
+                            <div class="program-cards">
+                                @if (Model.MastersByComplexity.ContainsKey(bin) && Model.MastersByComplexity[bin].Any())
+                                {
+                                    @foreach (var program in Model.MastersByComplexity[bin])
+                                    {
+                                        <div class="program-card masters-card"
+                                             style="height: @(program.BoxHeight)px; background-color: @program.BoxColor;"
+                                             data-total-courses="@program.TotalCourses"
+                                             data-program-type="masters"
+                                             onclick="showProgramDetails('@Html.Raw(Html.Encode(program.ProgramName))', '@program.DegreeType', @program.TotalCourses, @program.Required, @program.Elective, @program.Capstone, @program.ComplexityScore, @program.Level4Topics, '@Html.Raw(Html.Encode(program.AcademicDomain))')">
+                                            <div class="program-title" title="@program.ProgramName">@program.ProgramName</div>
+                                            <div class="program-details">
+                                                R:@program.Required E:@program.Elective C:@program.Capstone Advanced Topics:@program.Level4Topics
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <div class="empty-column">No programs</div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Certificate Programs Section -->
+        @if (Model.CertificatePrograms.Any())
+        {
+            <div class="programs-section">
+                <div class="section-header">
+                    <h2>Certificate Programs - <span id="certificatesCount">@Model.CertificatePrograms.Count</span> Programs</h2>
+                </div>
+
+                <div class="complexity-grid">
+                    <div class="complexity-header-container">
+                        <!-- Complexity Names Row -->
+                        <div class="complexity-names-row">
+                            <div class="complexity-name basic">Basic</div>
+                            <div class="complexity-name developer">Developing</div>
+                            <div class="complexity-name proficient">Proficient</div>
+                            <div class="complexity-name mastery">Mastery</div>
+                        </div>
+                        <!-- Complexity Ranges Row -->
+                        <div class="complexity-ranges-row">
+                            <div class="complexity-range">1.0-1.49</div>
+                            <div class="complexity-range">1.5-1.99</div>
+                            <div class="complexity-range">2.0-2.49</div>
+                            <div class="complexity-range">2.5-2.99</div>
+                            <div class="complexity-range">3.0-3.49</div>
+                            <div class="complexity-range">3.5-4.0</div>
+                        </div>
+                    </div>
+
+                    <div class="complexity-columns">
+                        @foreach (var bin in Model.ComplexityBins)
+                        {
+                            <div class="complexity-column">
+                                <div class="program-cards">
+                                    @if (Model.CertificatesByComplexity.ContainsKey(bin) && Model.CertificatesByComplexity[bin].Any())
+                                    {
+                                        @foreach (var program in Model.CertificatesByComplexity[bin])
+                                        {
+                                            <div class="program-card certificate-card"
+                                                 style="height: @(program.BoxHeight)px; background-color: @program.BoxColor;"
+                                                 data-total-courses="@program.TotalCourses"
+                                                 data-program-type="certificate"
+                                                 onclick="showProgramDetails('@Html.Raw(Html.Encode(program.ProgramName))', '@program.DegreeType', @program.TotalCourses, @program.Required, @program.Elective, @program.Capstone, @program.ComplexityScore, @program.Level4Topics, '@Html.Raw(Html.Encode(program.AcademicDomain))')">
+                                                <div class="program-title" title="@program.ProgramName">@program.ProgramName</div>
+                                                <div class="program-details">
+                                                    R:@program.Required E:@program.Elective C:@program.Capstone Advanced Topics:@program.Level4Topics
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <div class="empty-column">No programs</div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <!-- Show warning if no certificates detected -->
+            <div class="warning-indicator">
+                No Certificate Programs Detected
+                <br><small>Expected @expectedCertificates certificate programs from Google Sheets. Check certificate detection logic.</small>
+                <br><a href="/Home/DebugGoogleSheets" target="_blank" style="color: #856404;">🔧 Debug Certificate Detection</a>
+            </div>
+        }
+
+        <!-- PhD Programs Section -->
+        @if (Model.PhdPrograms != null && Model.PhdPrograms.Any())
+        {
+            <div class="programs-section">
+                <div class="section-header">
+                    <h2>PhD/Doctorate Programs - <span id="phdCount">@Model.PhdPrograms.Count</span> Programs</h2>
+                </div>
+
+                <div class="complexity-grid">
+                    <div class="complexity-header-container">
+                        <!-- Complexity Names Row -->
+                        <div class="complexity-names-row">
+                            <div class="complexity-name basic">Basic</div>
+                            <div class="complexity-name developer">Developing</div>
+                            <div class="complexity-name proficient">Proficient</div>
+                            <div class="complexity-name mastery">Mastery</div>
+                        </div>
+                        <!-- Complexity Ranges Row -->
+                        <div class="complexity-ranges-row">
+                            <div class="complexity-range">1.0-1.49</div>
+                            <div class="complexity-range">1.5-1.99</div>
+                            <div class="complexity-range">2.0-2.49</div>
+                            <div class="complexity-range">2.5-2.99</div>
+                            <div class="complexity-range">3.0-3.49</div>
+                            <div class="complexity-range">3.5-4.0</div>
+                        </div>
+                    </div>
+
+                    <div class="complexity-columns">
+                        @foreach (var bin in Model.ComplexityBins)
+                        {
+                            <div class="complexity-column">
+                                <div class="program-cards">
+                                    @if (Model.PhdsByComplexity != null && Model.PhdsByComplexity.ContainsKey(bin) && Model.PhdsByComplexity[bin].Any())
+                                    {
+                                        @foreach (var program in Model.PhdsByComplexity[bin])
+                                        {
+                                            <div class="program-card phd-card"
+                                                 style="height: @(program.BoxHeight)px; background-color: @program.BoxColor;"
+                                                 data-total-courses="@program.TotalCourses"
+                                                 data-program-type="phd"
+                                                 onclick="showProgramDetails('@Html.Raw(Html.Encode(program.ProgramName))', '@program.DegreeType', @program.TotalCourses, @program.Required, @program.Elective, @program.Capstone, @program.ComplexityScore, @program.Level4Topics, '@Html.Raw(Html.Encode(program.AcademicDomain))')">
+                                                <div class="program-title" title="@program.ProgramName">@program.ProgramName</div>
+                                                <div class="program-details">
+                                                    R:@program.Required E:@program.Elective C:@program.Capstone Advanced Topics:@program.Level4Topics
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <div class="empty-column">No programs</div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+        else if (expectedPhd > 0)
+        {
+            <!-- Show warning if no PhD programs detected but expected -->
+            <div class="warning-indicator">
+                No PhD/Doctorate Programs Detected
+                <br><small>Expected @expectedPhd PhD programs from Google Sheets. Check PhD detection logic.</small>
+                <br><a href="/Home/DebugGoogleSheets" target="_blank" style="color: #590000;">🔧 Debug PhD Detection</a>
+            </div>
+        }
+
+        <!-- Legend -->
+        <div class="legend-section">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #8B0000;"></div>
+                <span>Masters Programs (<span id="mastersLegendCount">@Model.MastersPrograms.Count</span>)</span>
+            </div>
+            @if (Model.CertificatePrograms.Any())
+            {
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #C00000;"></div>
+                    <span>Certificate Programs (<span id="certificatesLegendCount">@Model.CertificatePrograms.Count</span>)</span>
+                </div>
+            }
+            @if (Model.PhdPrograms != null && Model.PhdPrograms.Any())
+            {
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #590000;"></div>
+                    <span>PhD/Doctorate Programs (<span id="phdLegendCount">@Model.PhdPrograms.Count</span>)</span>
+                </div>
+            }
+            <div class="legend-item">
+                <div class="legend-size-large"></div>
+                <span>20+ Courses (Largest)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-size-medium"></div>
+                <span>10-19 Courses (Large)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-size-small"></div>
+                <span>5-9 Courses (Medium)</span>
+            </div>
+        </div>
+
+        <!-- Debug Information for Troubleshooting -->
+        @if (Model.TotalProgramsCount > 0 && Model.TotalProgramsCount != expectedTotal)
+        {
+            <div class="debug-info">
+                <strong>🔧 Debug Information:</strong><br>
+                Total Programs Loaded: @Model.TotalProgramsCount / @expectedTotal expected<br>
+                Masters Programs: @Model.MastersPrograms.Count / @expectedMasters expected<br>
+                Certificate Programs: @Model.CertificatePrograms.Count / @expectedCertificates expected<br>
+                @if (expectedPhd > 0)
+                {<text>PhD Programs: @(Model.PhdPrograms?.Count ?? 0) / @expectedPhd expected<br></text>}
+                <a href="/Home/DebugGoogleSheets" target="_blank">📊 View Detailed Debug Info</a> |
+                <a href="/Home/GetGraduateProgramsData" target="_blank">🔍 View Raw Data</a>
+            </div>
+        }
+    }
+</div>
+
+<!-- Program Details Modal -->
+<div id="programDetailsModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h3 id="modalProgramTitle"></h3>
+        <table class="program-details-table">
+            <tr>
+                <th>Degree Type</th>
+                <td id="modalDegreeType"></td>
+            </tr>
+            <tr>
+                <th>Total Courses</th>
+                <td id="modalTotalCourses"></td>
+            </tr>
+            <tr>
+                <th>Required Courses</th>
+                <td id="modalRequired"></td>
+            </tr>
+            <tr>
+                <th>Elective Courses</th>
+                <td id="modalElective"></td>
+            </tr>
+            <tr>
+                <th>Capstone</th>
+                <td id="modalCapstone"></td>
+            </tr>
+            <tr>
+                <th>Complexity Score</th>
+                <td id="modalComplexity"></td>
+            </tr>
+            <tr>
+                <th>Advanced Topics</th>
+                <td id="modalAdvanced"></td>
+            </tr>
+            <tr>
+                <th>Academic Domain</th>
+                <td id="modalDomain"></td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Global variables for filtering
+    let minCourses = 1;
+    let maxCourses = 30;
+    let totalProgramsCount = @Model.TotalProgramsCount;
+
+    // Update min course filter
+    function updateMinCourse(value) {
+        minCourses = parseInt(value);
+        document.getElementById('minCourseValue').textContent = minCourses;
+
+        // Ensure min doesn't exceed max
+        if (minCourses > maxCourses) {
+            maxCourses = minCourses;
+            document.getElementById('maxCourseSlider').value = maxCourses;
+            document.getElementById('maxCourseValue').textContent = maxCourses;
+        }
+
+        applyFilters();
+    }
+
+    // Update max course filter
+    function updateMaxCourse(value) {
+        maxCourses = parseInt(value);
+        document.getElementById('maxCourseValue').textContent = maxCourses;
+
+        // Ensure max doesn't go below min
+        if (maxCourses < minCourses) {
+            minCourses = maxCourses;
+            document.getElementById('minCourseSlider').value = minCourses;
+            document.getElementById('minCourseValue').textContent = minCourses;
+        }
+
+        applyFilters();
+    }
+
+    // Apply filters to program cards
+    function applyFilters() {
+        const programCards = document.querySelectorAll('.program-card');
+        let visibleCount = 0;
+        let mastersVisible = 0;
+        let certificatesVisible = 0;
+        let phdVisible = 0;
+
+        programCards.forEach(card => {
+            const totalCourses = parseInt(card.getAttribute('data-total-courses'));
+            const programType = card.getAttribute('data-program-type');
+
+            if (totalCourses >= minCourses && totalCourses <= maxCourses) {
+                card.classList.remove('filtered-out');
+                visibleCount++;
+
+                switch (programType) {
+                    case 'masters':
+                        mastersVisible++;
+                        break;
+                    case 'certificate':
+                        certificatesVisible++;
+                        break;
+                    case 'phd':
+                        phdVisible++;
+                        break;
+                }
+            } else {
+                card.classList.add('filtered-out');
+            }
+        });
+
+        // Update counts
+        updateVisibleCounts(visibleCount, mastersVisible, certificatesVisible, phdVisible);
+
+        // Update empty column visibility
+        updateEmptyColumns();
+    }
+
+    // Update visible counts in UI
+    function updateVisibleCounts(total, masters, certificates, phd) {
+        document.getElementById('visibleCount').textContent = total;
+        document.getElementById('totalCount').textContent = totalProgramsCount;
+
+        // Update section headers
+        const mastersCountElement = document.getElementById('mastersCount');
+        if (mastersCountElement) {
+            mastersCountElement.textContent = masters;
+        }
+
+        const certificatesCountElement = document.getElementById('certificatesCount');
+        if (certificatesCountElement) {
+            certificatesCountElement.textContent = certificates;
+        }
+
+        const phdCountElement = document.getElementById('phdCount');
+        if (phdCountElement) {
+            phdCountElement.textContent = phd;
+        }
+
+        // Update legend counts
+        const mastersLegendElement = document.getElementById('mastersLegendCount');
+        if (mastersLegendElement) {
+            mastersLegendElement.textContent = masters;
+        }
+
+        const certificatesLegendElement = document.getElementById('certificatesLegendCount');
+        if (certificatesLegendElement) {
+            certificatesLegendElement.textContent = certificates;
+        }
+
+        const phdLegendElement = document.getElementById('phdLegendCount');
+        if (phdLegendElement) {
+            phdLegendElement.textContent = phd;
+        }
+    }
+
+    // Update empty column visibility based on filtered results
+    function updateEmptyColumns() {
+        const columns = document.querySelectorAll('.complexity-column');
+
+        columns.forEach(column => {
+            const cards = column.querySelectorAll('.program-card:not(.filtered-out)');
+            const emptyColumn = column.querySelector('.empty-column');
+
+            if (cards.length === 0 && !emptyColumn) {
+                // Add empty column message if no visible cards
+                const programCards = column.querySelector('.program-cards');
+                const emptyDiv = document.createElement('div');
+                emptyDiv.className = 'empty-column';
+                emptyDiv.textContent = 'No programs match filters';
+                programCards.appendChild(emptyDiv);
+            } else if (cards.length > 0 && emptyColumn) {
+                // Remove empty column message if there are visible cards
+                emptyColumn.remove();
+            }
+        });
+    }
+
+    // Reset all filters
+    function resetFilters() {
+        minCourses = 1;
+        maxCourses = 30;
+
+        document.getElementById('minCourseSlider').value = minCourses;
+        document.getElementById('maxCourseSlider').value = maxCourses;
+        document.getElementById('minCourseValue').textContent = minCourses;
+        document.getElementById('maxCourseValue').textContent = maxCourses;
+
+        applyFilters();
+    }
+
+    // Export filtered data (placeholder function)
+    function exportData() {
+        const visibleCards = document.querySelectorAll('.program-card:not(.filtered-out)');
+        const exportData = [];
+
+        visibleCards.forEach(card => {
+            const programName = card.querySelector('.program-title').textContent;
+            const totalCourses = card.getAttribute('data-total-courses');
+            const programType = card.getAttribute('data-program-type');
+
+            exportData.push({
+                program: programName,
+                totalCourses: totalCourses,
+                type: programType
+            });
+        });
+
+        // Convert to CSV and download
+        const csvContent = "data:text/csv;charset=utf-8,"
+            + "Program Name,Total Courses,Type\n"
+            + exportData.map(row => `"${row.program}",${row.totalCourses},${row.type}`).join("\n");
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "filtered_graduate_programs.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    // Show program details in a modal
+    function showProgramDetails(programName, degreeType, totalCourses, required, elective, capstone, complexityScore, level4Topics, academicDomain) {
+        document.getElementById('modalProgramTitle').textContent = programName;
+        document.getElementById('modalDegreeType').textContent = degreeType;
+        document.getElementById('modalTotalCourses').textContent = totalCourses;
+        document.getElementById('modalRequired').textContent = required;
+        document.getElementById('modalElective').textContent = elective;
+        document.getElementById('modalCapstone').textContent = capstone;
+        document.getElementById('modalComplexity').textContent = complexityScore;
+        document.getElementById('modalAdvanced').textContent = level4Topics;
+        document.getElementById('modalDomain').textContent = academicDomain;
+
+        document.getElementById('programDetailsModal').style.display = 'block';
+    }
+
+    // Close the modal
+    function closeModal() {
+        document.getElementById('programDetailsModal').style.display = 'none';
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('programDetailsModal');
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    // Add smooth scrolling for horizontal scroll containers
+    document.addEventListener('DOMContentLoaded', function() {
+        const scrollContainers = document.querySelectorAll('.complexity-grid');
+
+        scrollContainers.forEach(container => {
+            container.addEventListener('wheel', function(e) {
+                if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+                    e.preventDefault();
+                    this.scrollLeft += e.deltaX;
+                }
+            });
+        });
+
+        // Initialize filter counts
+        applyFilters();
+
+        // Enhanced logging and validation
+        const dataSource = '@(ViewBag.DataSource ?? "")';
+        const totalPrograms = @Model.TotalProgramsCount;
+        const mastersCount = @Model.MastersPrograms.Count;
+        const certificatesCount = @Model.CertificatePrograms.Count;
+        const phdCount = @(Model.PhdPrograms?.Count ?? 0);
+        const expectedTotal = @expectedTotal;
+        const expectedMasters = @expectedMasters;
+        const expectedCertificates = @expectedCertificates;
+        const expectedPhd = @expectedPhd;
+
+        console.log('=== Graduate Programs Visualization Debug ===');
+        console.log(`Data Source: ${dataSource}`);
+        console.log(`Total Programs: ${totalPrograms} (Expected: ${expectedTotal})`);
+        console.log(`Masters: ${mastersCount} (Expected: ${expectedMasters})`);
+        console.log(`Certificates: ${certificatesCount} (Expected: ${expectedCertificates})`);
+        console.log(`PhD: ${phdCount} (Expected: ${expectedPhd})`);
+
+        if (totalPrograms === expectedTotal &&
+            mastersCount === expectedMasters &&
+            certificatesCount === expectedCertificates &&
+            phdCount === expectedPhd) {
+            console.log('Perfect! All data loaded correctly from Google Sheets');
+        } else if (totalPrograms > 0) {
+            console.warn('Data count mismatch - check Google Sheets parsing');
+        } else {
+            console.error('No data loaded from Google Sheets');
+        }
+
+        // Log complexity distribution
+        console.log('=== Complexity Distribution ===');
+        @foreach (var bin in Model.ComplexityBins)
+        {
+            var mastersInBin = Model.MastersByComplexity.ContainsKey(bin) ? Model.MastersByComplexity[bin].Count : 0;
+            var certsInBin = Model.CertificatesByComplexity.ContainsKey(bin) ? Model.CertificatesByComplexity[bin].Count : 0;
+            var phdInBin = (Model.PhdsByComplexity != null && Model.PhdsByComplexity.ContainsKey(bin)) ? Model.PhdsByComplexity[bin].Count : 0;
+            <text>console.log(`${@Json.Serialize(bin)}: ${@mastersInBin} Masters + ${@certsInBin} Certificates + ${@phdInBin} PhD = ${@(mastersInBin + certsInBin + phdInBin)} Total`);</text>
+        }
+
+        console.log('==========================================');
+    });
+
+    // Enhanced error handling
+    window.addEventListener('error', function(e) {
+        console.error('Page error:', e.error);
+    });
+</script>

@@ -1,0 +1,111 @@
+﻿@model USPTOQueryBuilder.Models.QueryBuilderViewModel
+@{
+    ViewData["Title"] = "USPTO Patent Query Builder";
+}
+
+<div class="container mt-4">
+    <h1>USPTO Patent Query Builder</h1>
+    <p class="lead">Search patent data to identify educational opportunities in emerging technologies</p>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <form asp-action="ExecuteQuery" method="post" id="queryForm">
+        <div class="card mt-4">
+            <div class="card-header">
+                <h3 class="mb-0">Patent Search Configuration</h3>
+            </div>
+            <div class="card-body">
+                <!-- Query Template Selection -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <label asp-for="QueryType" class="form-label fw-bold">Select Search Template</label>
+                        <select asp-for="QueryType" class="form-select" id="queryTemplate">
+                            <option value="">-- Custom Query --</option>
+                            <optgroup label="Date Range Searches">
+                                <option value="2024-patents">All 2024 Patents</option>
+                                <option value="recent-patents">Recent Patents (2022-2025)</option>
+                            </optgroup>
+                            <optgroup label="Technology Searches">
+                                <option value="ai-search">Artificial Intelligence</option>
+                                <option value="ml-search">Machine Learning</option>
+                                <option value="renewable-energy">Renewable Energy</option>
+                                <option value="quantum-computing">Quantum Computing</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Basic Settings -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="PrimaryCategory" class="form-label">Primary Category</label>
+                        <select asp-for="PrimaryCategory" class="form-select" required>
+                            <option value="Patents" selected>Patents</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Date Range -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="mb-0">Date Range</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label asp-for="StartDate" class="form-label">Start Date</label>
+                                <input asp-for="StartDate" class="form-control" type="date" />
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="EndDate" class="form-label">End Date</label>
+                                <input asp-for="EndDate" class="form-control" type="date" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search Criteria -->
+                <div class="card mb-3">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Search Criteria (Optional)</h5>
+                        <button type="button" class="btn btn-sm btn-primary" id="addCriteria">
+                            Add Criteria
+                        </button>
+                    </div>
+                    <div class="card-body" id="criteriaContainer">
+                        <!-- Criteria will be added dynamically -->
+                    </div>
+                </div>
+
+                <!-- Output Fields -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="mb-0">Output Fields</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="outputFieldsContainer" class="row">
+                            <!-- Fields will be populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <input type="hidden" asp-for="UserEmail" value="default@example.com" />
+            </div>
+            <div class="card-footer">
+                <button type="submit" class="btn btn-success btn-lg">
+                    Execute Query
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script src="~/js/queryBuilder.js"></script>
+}

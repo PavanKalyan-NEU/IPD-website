@@ -1,0 +1,48 @@
+﻿@model USPTOQueryBuilder.Models.QueryBuilderViewModel
+@{
+    ViewData["Title"] = "Test Date Range Query";
+}
+
+<div class="container mt-4">
+    <h1>Test Date Range Query</h1>
+    <p>Let's test with just a date range to ensure the API connection works</p>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["Error"]
+        </div>
+    }
+
+    <form asp-action="ExecuteQuery" method="post">
+        <div class="card">
+            <div class="card-body">
+                <input type="hidden" asp-for="PrimaryCategory" value="Patents" />
+                <input type="hidden" asp-for="QueryType" value="" />
+                <input type="hidden" asp-for="UserEmail" value="test@example.com" />
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label>Start Date</label>
+                        <input asp-for="StartDate" type="date" class="form-control" value="2024-01-01" />
+                    </div>
+                    <div class="col-md-6">
+                        <label>End Date</label>
+                        <input asp-for="EndDate" type="date" class="form-control" value="2024-01-31" />
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Test Date Query</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="mt-3">
+        <p>This will send a simple query:</p>
+        <pre><code>{
+  "q": {"_and": [{"_gte": {"patent_date": "2024-01-01"}}, {"_lte": {"patent_date": "2024-01-31"}}]},
+  "f": ["patent_id", "patent_date", "patent_title"],
+  "o": {"per_page": 10}
+}</code></pre>
+    </div>
+</div>

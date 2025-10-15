@@ -1,0 +1,94 @@
+﻿@model USPTOQueryBuilder.Models.PreviewResult
+@{
+    ViewData["Title"] = "Query Preview";
+    var queryModel = ViewBag.Query as USPTOQueryBuilder.Models.QueryBuilderViewModel;
+}
+
+<div class="container mt-4">
+    <h1>Query Preview Results</h1>
+
+    @if (Model.Success)
+    {
+        <div class="alert alert-info">
+            <strong>Total Records Found:</strong> @Model.TotalRecords
+        </div>
+
+        <h3>Sample Results (First 10 records)</h3>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        @if (Model.Data != null && Model.Data.Count > 0)
+                        {
+                            @foreach (var key in Model.Data[0].Keys)
+                            {
+                                <th>@key</th>
+                            }
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Data != null)
+                    {
+                        @foreach (var row in Model.Data)
+                        {
+                            <tr>
+                                @foreach (var value in row.Values)
+                                {
+                                    <td>@value</td>
+                                }
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <form asp-action="Submit" method="post" class="mt-4">
+            @if (queryModel != null)
+            {
+                @* Pass the model data back using hidden fields *@
+                <input type="hidden" name="PrimaryCategory" value="@queryModel.PrimaryCategory" />
+                <input type="hidden" name="QueryType" value="@queryModel.QueryType" />
+                <input type="hidden" name="UserEmail" value="@queryModel.UserEmail" />
+                <input type="hidden" name="StartDate" value="@queryModel.StartDate?.ToString("yyyy-MM-dd")" />
+                <input type="hidden" name="EndDate" value="@queryModel.EndDate?.ToString("yyyy-MM-dd")" />
+
+                @if (queryModel.SearchCriteria != null)
+                {
+                    for (int i = 0; i < queryModel.SearchCriteria.Count; i++)
+                    {
+                        <input type="hidden" name="SearchCriteria[@i].Field" value="@queryModel.SearchCriteria[i].Field" />
+                        <input type="hidden" name="SearchCriteria[@i].Operator" value="@queryModel.SearchCriteria[i].Operator" />
+                        <input type="hidden" name="SearchCriteria[@i].Value" value="@queryModel.SearchCriteria[i].Value" />
+                        <input type="hidden" name="SearchCriteria[@i].LogicalOperator" value="@queryModel.SearchCriteria[i].LogicalOperator" />
+                    }
+                }
+
+                @if (queryModel.SelectedOutputFields != null)
+                {
+                    foreach (var field in queryModel.SelectedOutputFields)
+                    {
+                        <input type="hidden" name="SelectedOutputFields" value="@field" />
+                    }
+                }
+            }
+
+            <button type="submit" class="btn btn-success btn-lg">
+                <i class="fas fa-check"></i> Submit Full Query
+            </button>
+            <a asp-action="Builder" class="btn btn-secondary btn-lg">
+                <i class="fas fa-edit"></i> Modify Query
+            </a>
+        </form>
+    }
+    else
+    {
+        <div class="alert alert-danger">
+            <strong>Preview Failed:</strong> @Model.Message
+        </div>
+        <a asp-action="Builder" class="btn btn-primary">
+            <i class="fas fa-arrow-left"></i> Back to Query Builder
+        </a>
+    }
+</div>

@@ -1,0 +1,123 @@
+﻿@model Northeastern_Personal_Workspace.Models.CourseSearchViewModel
+@using System.Text.RegularExpressions
+@{
+    ViewData["Title"] = "Course Search";
+}
+
+<link rel="stylesheet" href="~/css/course.css" />
+
+<div class="neu-header">
+    <div class="container">
+        <h1>Northeastern University Graduate Course Search</h1>
+        <p>2024-2025 Graduate Catalog</p>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <div class="search-section">
+        <h2>Search Graduate Courses</h2>
+        <p>Enter keywords like "AI/ML Engineering + Mechanical Engineering"</p>
+
+        <form method="get" asp-action="Index" asp-controller="Course" class="search-form">
+            <div class="input-group">
+                <input type="text"
+                       name="searchQuery"
+                       value="@Model.SearchQuery"
+                       class="form-control search-input"
+                       placeholder="Enter keywords (e.g., machine learning, data science, robotics)" />
+                <button type="submit" class="btn search-button">
+                    <i class="fas fa-search"></i> Search Courses
+                </button>
+            </div>
+        </form>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.SearchQuery))
+    {
+        <div class="results-info">
+            <p>Found <strong>@Model.TotalResults</strong> course(s) for "@Model.SearchQuery" in @Model.SearchTime</p>
+        </div>
+    }
+
+    <div class="results-section">
+        @if (Model.Results.Any())
+        {
+            @foreach (var course in Model.Results)
+            {
+                <div class="course-card">
+                    <div class="course-header">
+                        <div>
+                            <div class="course-number">@course.CourseNumber</div>
+                            <h3 class="course-title">@course.CourseName</h3>
+                        </div>
+                        <div class="course-credits">@course.Credits Credits</div>
+                    </div>
+
+                    <div class="course-meta">
+                        @if (!string.IsNullOrEmpty(course.Department))
+                        {
+                            <span class="badge badge-department">@course.Department</span>
+                        }
+                        @if (!string.IsNullOrEmpty(course.College))
+                        {
+                            <span class="college-name">@course.College</span>
+                        }
+                    </div>
+
+                    @if (course.Keywords.Any())
+                    {
+                        <div class="keywords-section">
+                            @foreach (var keyword in course.Keywords.Take(5))
+                            {
+                                <span class="badge badge-keyword">@keyword</span>
+                            }
+                        </div>
+                    }
+
+                    @if (course.Prerequisites.Any())
+                    {
+                        <div class="prerequisites">
+                            <strong>Prerequisites:</strong> @string.Join(", ", course.Prerequisites)
+                        </div>
+                    }
+
+                    <div class="why-section">
+                        <strong>Why this course:</strong> @course.WhyRelevant
+                    </div>
+                </div>
+            }
+        }
+        else if (!string.IsNullOrWhiteSpace(Model.SearchQuery))
+        {
+            <div class="no-results">
+                <i class="fas fa-search fa-3x mb-3"></i>
+                <h3>No courses found</h3>
+                <p>Try different keywords or check your spelling</p>
+            </div>
+        }
+        else
+        {
+            <div class="no-results">
+                <p>Enter keywords to search for courses</p>
+            </div>
+        }
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(ViewBag.HighlightScript))
+{
+    <script>// Optional: Add client-side highlighting if needed
+        function highlightText(text, searchQuery) {
+            if (!searchQuery || !text) return text;
+
+            var searchTerms = searchQuery.split(/[+,\s]+/).filter(t => t.length >= 2);
+            var highlightedText = text;
+
+            searchTerms.forEach(function(term) {
+                var regex = new RegExp('\\b(' + term + ')\\b', 'gi');
+                highlightedText = highlightedText.replace(regex, '<mark>$1</mark>');
+            });
+
+            return highlightedText;
+        }</script>
+}

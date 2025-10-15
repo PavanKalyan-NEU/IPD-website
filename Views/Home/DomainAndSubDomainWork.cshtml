@@ -1,0 +1,846 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Domains & Subdomains - Northeastern University</title>
+    <style>
+        :root {
+            --nu-red: #C8102E;
+            --nu-maroon: #8B1538;
+            --nu-black: #000000;
+            --nu-gray: #54585A;
+            --nu-light-gray: #F5F5F5;
+            --nu-white: #FFFFFF;
+            --nu-red-hover: #A00D26;
+            --nu-maroon-hover: #6D102D;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Lato', 'Segoe UI', Arial, sans-serif;
+            background-color: var(--nu-light-gray);
+            color: var(--nu-gray);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Header Section */
+        .header {
+            background: linear-gradient(135deg, var(--nu-maroon) 0%, var(--nu-red) 100%);
+            color: var(--nu-white);
+            padding: 2rem 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+        }
+
+        .header-content {
+            padding: 0 1rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Main Container */
+        .main-container {
+            padding: 1rem;
+        }
+
+        /* Stats Cards */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-card {
+            background: var(--nu-white);
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid var(--nu-red);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-card h3 {
+            color: var(--nu-gray);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card .stat-value {
+            color: var(--nu-maroon);
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        /* Filter Section */
+        .filter-section {
+            background: var(--nu-white);
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .filter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-header h2 {
+            color: var(--nu-maroon);
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-toggle {
+            background: var(--nu-red);
+            color: var(--nu-white);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s ease;
+        }
+
+        .filter-toggle:hover {
+            background: var(--nu-red-hover);
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            color: var(--nu-gray);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            padding: 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.95rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: var(--nu-red);
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--nu-red);
+            color: var(--nu-white);
+        }
+
+        .btn-primary:hover {
+            background: var(--nu-red-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--nu-gray);
+            color: var(--nu-white);
+        }
+
+        .btn-secondary:hover {
+            background: var(--nu-black);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--nu-maroon);
+            border: 2px solid var(--nu-maroon);
+        }
+
+        .btn-outline:hover {
+            background: var(--nu-maroon);
+            color: var(--nu-white);
+        }
+
+        /* Add Record Section */
+        .add-record-section {
+            background: var(--nu-white);
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            display: none;
+        }
+
+        .add-record-section.active {
+            display: block;
+        }
+
+        .add-record-header {
+            color: var(--nu-maroon);
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--nu-light-gray);
+        }
+
+        /* Table Section */
+        .table-section {
+            background: var(--nu-white);
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .table-header {
+            background: var(--nu-maroon);
+            color: var(--nu-white);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-header h2 {
+            font-size: 1.5rem;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--nu-white);
+        }
+
+        thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        th {
+            background: var(--nu-black);
+            color: var(--nu-white);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th:last-child {
+            border-right: none;
+        }
+
+        td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #eee;
+            font-size: 0.95rem;
+            color: var(--nu-gray);
+        }
+
+        tr:hover {
+            background-color: rgba(200, 16, 46, 0.05);
+        }
+
+        .college-tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .college-COE {
+            background-color: rgba(200, 16, 46, 0.1);
+            color: var(--nu-red);
+        }
+
+        .college-COS {
+            background-color: rgba(139, 21, 56, 0.1);
+            color: var(--nu-maroon);
+        }
+
+        .college-CAMD {
+            background-color: rgba(84, 88, 90, 0.1);
+            color: var(--nu-gray);
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--nu-gray);
+        }
+
+        .loading::after {
+            content: '...';
+            animation: loading 1.5s infinite;
+        }
+
+        @@keyframes loading {
+            0% { content: '.'; }
+            33% { content: '..'; }
+            66% { content: '...'; }
+        }
+
+        /* Responsive Design */
+        @@media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .table-container {
+                max-height: 400px;
+            }
+
+            th, td {
+                padding: 0.5rem;
+                font-size: 0.85rem;
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--nu-maroon);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--nu-red);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <h1>Domains & Subdomains Management</h1>
+            <p>Northeastern University Academic Program Dashboard</p>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Statistics Cards -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <h3>Total Programs</h3>
+                <div class="stat-value" id="totalCount">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Domains</h3>
+                <div class="stat-value" id="domainCount">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Colleges</h3>
+                <div class="stat-value" id="collegeCount">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Award Levels</h3>
+                <div class="stat-value" id="awardLevelCount">0</div>
+            </div>
+        </div>
+
+        <!-- Advanced Filters Section -->
+        <section class="filter-section">
+            <div class="filter-header">
+                <h2>🔍 Advanced Filters</h2>
+                <button class="filter-toggle" onclick="toggleAddRecord()">+ Add New Record</button>
+            </div>
+
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label>Search (Domain/CIP/Program)</label>
+                    <input type="text" id="globalSearch" placeholder="Type to search...">
+                </div>
+
+                <div class="filter-group">
+                    <label>Domain</label>
+                    <select id="domainFilter">
+                        <option value="">All Domains</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Subdomain</label>
+                    <select id="subdomainFilter">
+                        <option value="">All Subdomains</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>College</label>
+                    <select id="collegeFilter">
+                        <option value="">All Colleges</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Award Level</label>
+                    <select id="awardLevelFilter">
+                        <option value="">All Award Levels</option>
+                        <option value="Bachelor's">Bachelor's</option>
+                        <option value="Master's">Master's</option>
+                        <option value="PhD">PhD</option>
+                        <option value="Grad Cert">Grad Cert</option>
+                        <option value="Professional Doct">Professional Doct</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Program Code</label>
+                    <input type="text" id="programCodeFilter" placeholder="Enter program code...">
+                </div>
+            </div>
+
+            <div class="filter-actions">
+                <button class="btn btn-primary" onclick="applyFilters()">Apply Filters</button>
+                <button class="btn btn-secondary" onclick="clearFilters()">Clear All</button>
+                <button class="btn btn-outline" onclick="exportToCSV()">Export to CSV</button>
+            </div>
+        </section>
+
+        <!-- Add New Record Section -->
+        <section class="add-record-section" id="addRecordSection">
+            <h2 class="add-record-header">Add New Record</h2>
+            <div class="filters-grid" id="newRecordForm">
+                <div class="filter-group">
+                    <label>Domain (Gen Field of Study)</label>
+                    <input type="text" id="newDomain" placeholder="Enter domain...">
+                </div>
+                <div class="filter-group">
+                    <label>Domain CIP (2-digit)</label>
+                    <input type="text" id="newDomainCIP" placeholder="00">
+                </div>
+                <div class="filter-group">
+                    <label>Subdomain (Field of Study)</label>
+                    <input type="text" id="newSubdomain" placeholder="Enter subdomain...">
+                </div>
+                <div class="filter-group">
+                    <label>Subdomain CIP (6-code)</label>
+                    <input type="text" id="newSubdomainCIP" placeholder="00.0000">
+                </div>
+                <div class="filter-group">
+                    <label>Registrar CIP (6-code)</label>
+                    <input type="text" id="newRegistrarCIP" placeholder="00.0000">
+                </div>
+                <div class="filter-group">
+                    <label>Registrar CIP Name (NCES)</label>
+                    <input type="text" id="newRegistrarCIPName" placeholder="Enter NCES name...">
+                </div>
+                <div class="filter-group">
+                    <label>NU Academic Program</label>
+                    <input type="text" id="newNUAcademicProgram" placeholder="Enter program name...">
+                </div>
+                <div class="filter-group">
+                    <label>NU Major Transcript</label>
+                    <input type="text" id="newNUMajorTranscript" placeholder="Enter transcript name...">
+                </div>
+                <div class="filter-group">
+                    <label>NU Program Code</label>
+                    <input type="text" id="newNUProgramCode" placeholder="Enter code...">
+                </div>
+                <div class="filter-group">
+                    <label>College</label>
+                    <input type="text" id="newCollege" placeholder="Enter college...">
+                </div>
+                <div class="filter-group">
+                    <label>Award Level</label>
+                    <select id="newAwardLevel">
+                        <option value="">Select Award Level</option>
+                        <option value="Bachelor's">Bachelor's</option>
+                        <option value="Master's">Master's</option>
+                        <option value="PhD">PhD</option>
+                        <option value="Grad Cert">Grad Cert</option>
+                        <option value="Professional Doct">Professional Doct</option>
+                    </select>
+                </div>
+            </div>
+            <div class="filter-actions">
+                <button class="btn btn-primary" onclick="addNewRecord()">Add Record</button>
+                <button class="btn btn-secondary" onclick="clearAddForm()">Clear Form</button>
+            </div>
+        </section>
+
+        <!-- Table Section -->
+        <section class="table-section">
+            <div class="table-header">
+                <h2>Program Data</h2>
+                <div class="export-buttons">
+                    <button class="btn btn-secondary" onclick="downloadTable()">Download</button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table id="data-table">
+                    <thead>
+                        <tr>
+                            <th>Domain (Gen Field of Study)</th>
+                            <th>Domain CIP</th>
+                            <th>Subdomain (Field of Study)</th>
+                            <th>Subdomain CIP</th>
+                            <th>Registrar CIP</th>
+                            <th>Registrar CIP Name (NCES)</th>
+                            <th>NU Academic Program</th>
+                            <th>NU Major Transcript</th>
+                            <th>NU Program Code</th>
+                            <th>College</th>
+                            <th>Award Level</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="11" class="loading">Loading data</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <script>let allData = [];
+        let filteredData = [];
+        let uniqueDomains = new Set();
+        let uniqueSubdomains = new Set();
+        let uniqueColleges = new Set();
+        let uniqueAwardLevels = new Set();
+
+        document.addEventListener("DOMContentLoaded", function () {
+            loadData();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            document.getElementById("globalSearch").addEventListener("input", debounce(applyFilters, 300));
+            document.getElementById("domainFilter").addEventListener("change", applyFilters);
+            document.getElementById("subdomainFilter").addEventListener("change", applyFilters);
+            document.getElementById("collegeFilter").addEventListener("change", applyFilters);
+            document.getElementById("awardLevelFilter").addEventListener("change", applyFilters);
+            document.getElementById("programCodeFilter").addEventListener("input", debounce(applyFilters, 300));
+        }
+
+        function loadData() {
+            const googleSheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQPuwyA7M7cfpHWuYNdgRyJtvAXk2HYUCKVU9cRP8SANZB1pU862AkRf7034iHpb48qfLPWLdNsb6Ch/pub?output=csv";
+
+            fetch(googleSheetUrl)
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.text();
+                })
+                .then(csvData => {
+                    const rows = parseCSV(csvData);
+                    if (rows.length > 1) {
+                        processData(rows);
+                        populateFilters();
+                        renderTable(allData);
+                        updateStatistics();
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching data:", error);
+                    document.querySelector("#data-table tbody").innerHTML =
+                        '<tr><td colspan="11" style="text-align: center; color: #C8102E;">Error loading data</td></tr>';
+                });
+        }
+
+        function parseCSV(csvData) {
+            const lines = csvData.trim().split("\n");
+            return lines.map(line => {
+                return line.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g) || [];
+            });
+        }
+
+        function processData(rows) {
+            allData = [];
+            for (let i = 1; i < rows.length; i++) {
+                const rowData = rows[i].map(cell => cell.trim().replace(/^"(.*)"$/, '$1'));
+
+                allData.push({
+                    domain: rowData[0] || '-',
+                    domainCIP: rowData[1] || '-',
+                    subdomain: rowData[2] || '-',
+                    subdomainCIP: rowData[3] || '-',
+                    registrarCIP: rowData[4] || '-',
+                    registrarCIPName: rowData[5] || '-',
+                    nuAcademicProgram: rowData[6] || '-',
+                    nuMajorTranscript: rowData[7] || '-',
+                    nuProgramCode: rowData[8] || '-',
+                    college: rowData[9] || '-',
+                    awardLevel: rowData[10] || '-'
+                });
+
+                // Collect unique values for filters
+                if (rowData[0]) uniqueDomains.add(rowData[0]);
+                if (rowData[2]) uniqueSubdomains.add(rowData[2]);
+                if (rowData[9]) uniqueColleges.add(rowData[9]);
+                if (rowData[10]) uniqueAwardLevels.add(rowData[10]);
+            }
+            filteredData = [...allData];
+        }
+
+        function populateFilters() {
+            // Domain filter
+            const domainSelect = document.getElementById("domainFilter");
+            domainSelect.innerHTML = '<option value="">All Domains</option>';
+            Array.from(uniqueDomains).sort().forEach(domain => {
+                domainSelect.innerHTML += `<option value="${domain}">${domain}</option>`;
+            });
+
+            // Subdomain filter
+            const subdomainSelect = document.getElementById("subdomainFilter");
+            subdomainSelect.innerHTML = '<option value="">All Subdomains</option>';
+            Array.from(uniqueSubdomains).sort().forEach(subdomain => {
+                subdomainSelect.innerHTML += `<option value="${subdomain}">${subdomain}</option>`;
+            });
+
+            // College filter
+            const collegeSelect = document.getElementById("collegeFilter");
+            collegeSelect.innerHTML = '<option value="">All Colleges</option>';
+            Array.from(uniqueColleges).sort().forEach(college => {
+                collegeSelect.innerHTML += `<option value="${college}">${college}</option>`;
+            });
+        }
+
+        function applyFilters() {
+            const globalSearch = document.getElementById("globalSearch").value.toLowerCase();
+            const domainFilter = document.getElementById("domainFilter").value;
+            const subdomainFilter = document.getElementById("subdomainFilter").value;
+            const collegeFilter = document.getElementById("collegeFilter").value;
+            const awardLevelFilter = document.getElementById("awardLevelFilter").value;
+            const programCodeFilter = document.getElementById("programCodeFilter").value.toLowerCase();
+
+            filteredData = allData.filter(row => {
+                const matchesGlobal = !globalSearch ||
+                    Object.values(row).some(val => val.toLowerCase().includes(globalSearch));
+
+                const matchesDomain = !domainFilter || row.domain === domainFilter;
+                const matchesSubdomain = !subdomainFilter || row.subdomain === subdomainFilter;
+                const matchesCollege = !collegeFilter || row.college === collegeFilter;
+                const matchesAwardLevel = !awardLevelFilter || row.awardLevel === awardLevelFilter;
+                const matchesProgramCode = !programCodeFilter ||
+                    row.nuProgramCode.toLowerCase().includes(programCodeFilter);
+
+                return matchesGlobal && matchesDomain && matchesSubdomain &&
+                    matchesCollege && matchesAwardLevel && matchesProgramCode;
+            });
+
+            renderTable(filteredData);
+            updateStatistics();
+        }
+
+        function renderTable(data) {
+            const tbody = document.querySelector("#data-table tbody");
+            tbody.innerHTML = '';
+
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="11" style="text-align: center;">No records found</td></tr>';
+                return;
+            }
+
+            data.forEach(row => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                        <td>${row.domain}</td>
+                        <td>${row.domainCIP}</td>
+                        <td>${row.subdomain}</td>
+                        <td>${row.subdomainCIP}</td>
+                        <td>${row.registrarCIP}</td>
+                        <td>${row.registrarCIPName}</td>
+                        <td>${row.nuAcademicProgram}</td>
+                        <td>${row.nuMajorTranscript}</td>
+                        <td>${row.nuProgramCode}</td>
+                        <td><span class="college-tag college-${row.college.replace(/\s+/g, '')}">${row.college}</span></td>
+                        <td>${row.awardLevel}</td>
+                    `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateStatistics() {
+            document.getElementById("totalCount").textContent = filteredData.length;
+
+            const uniqueFilteredDomains = new Set(filteredData.map(d => d.domain));
+            document.getElementById("domainCount").textContent = uniqueFilteredDomains.size;
+
+            const uniqueFilteredColleges = new Set(filteredData.map(d => d.college));
+            document.getElementById("collegeCount").textContent = uniqueFilteredColleges.size;
+
+            const uniqueFilteredAwardLevels = new Set(filteredData.map(d => d.awardLevel));
+            document.getElementById("awardLevelCount").textContent = uniqueFilteredAwardLevels.size;
+        }
+
+        function clearFilters() {
+            document.getElementById("globalSearch").value = "";
+            document.getElementById("domainFilter").value = "";
+            document.getElementById("subdomainFilter").value = "";
+            document.getElementById("collegeFilter").value = "";
+            document.getElementById("awardLevelFilter").value = "";
+            document.getElementById("programCodeFilter").value = "";
+            applyFilters();
+        }
+
+        function toggleAddRecord() {
+            const addSection = document.getElementById("addRecordSection");
+            addSection.classList.toggle("active");
+        }
+
+        function addNewRecord() {
+            const newRecord = {
+                domain: document.getElementById("newDomain").value || '-',
+                domainCIP: document.getElementById("newDomainCIP").value || '-',
+                subdomain: document.getElementById("newSubdomain").value || '-',
+                subdomainCIP: document.getElementById("newSubdomainCIP").value || '-',
+                registrarCIP: document.getElementById("newRegistrarCIP").value || '-',
+                registrarCIPName: document.getElementById("newRegistrarCIPName").value || '-',
+                nuAcademicProgram: document.getElementById("newNUAcademicProgram").value || '-',
+                nuMajorTranscript: document.getElementById("newNUMajorTranscript").value || '-',
+                nuProgramCode: document.getElementById("newNUProgramCode").value || '-',
+                college: document.getElementById("newCollege").value || '-',
+                awardLevel: document.getElementById("newAwardLevel").value || '-'
+            };
+
+            if (Object.values(newRecord).every(val => val === '-')) {
+                alert("Please fill in at least one field.");
+                return;
+            }
+
+            allData.push(newRecord);
+
+            // Update unique values
+            if (newRecord.domain !== '-') uniqueDomains.add(newRecord.domain);
+            if (newRecord.subdomain !== '-') uniqueSubdomains.add(newRecord.subdomain);
+            if (newRecord.college !== '-') uniqueColleges.add(newRecord.college);
+            if (newRecord.awardLevel !== '-') uniqueAwardLevels.add(newRecord.awardLevel);
+
+            populateFilters();
+            applyFilters();
+            clearAddForm();
+            toggleAddRecord();
+
+            alert("Record added successfully!");
+        }
+
+        function clearAddForm() {
+            document.querySelectorAll("#newRecordForm input").forEach(input => {
+                input.value = "";
+            });
+            document.getElementById("newAwardLevel").value = "";
+        }
+
+        function exportToCSV() {
+            let csv = 'Domain,Domain CIP,Subdomain,Subdomain CIP,Registrar CIP,Registrar CIP Name,NU Academic Program,NU Major Transcript,NU Program Code,College,Award Level\n';
+
+            filteredData.forEach(row => {
+                csv += `"${row.domain}","${row.domainCIP}","${row.subdomain}","${row.subdomainCIP}","${row.registrarCIP}","${row.registrarCIPName}","${row.nuAcademicProgram}","${row.nuMajorTranscript}","${row.nuProgramCode}","${row.college}","${row.awardLevel}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('hidden', '');
+            a.setAttribute('href', url);
+            a.setAttribute('download', 'nu_domains_export.csv');
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function downloadTable() {
+            exportToCSV();
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }</script>
+</body>
+</html>

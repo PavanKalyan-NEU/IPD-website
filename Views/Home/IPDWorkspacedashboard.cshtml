@@ -1,0 +1,725 @@
+﻿@{
+    ViewData["Title"] = "IPD Workspace";
+}
+
+<style>
+    body {
+        background-color: #121212;
+        color: white;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 20px;
+    }
+
+    .main-container {
+        max-width: 95%;
+        margin: 0 auto;
+    }
+
+    .table-container {
+        width: 100%;
+        margin: auto;
+        overflow-x: auto;
+        background-color: #1e1e1e;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 25px;
+        color: #4CAF50;
+        font-size: 28px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: white;
+        color: #333;
+        table-layout: fixed;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        border: 1px solid #444;
+    }
+
+    th, td {
+        padding: 12px 15px;
+        border: 1px solid #ddd;
+        text-align: left;
+        word-wrap: break-word;
+        vertical-align: top;
+    }
+
+    th {
+        background-color: #2c3e50;
+        color: white;
+        text-align: center;
+        font-weight: 600;
+        position: sticky;
+        top: 0;
+        text-transform: uppercase;
+        font-size: 14px;
+        letter-spacing: 0.5px;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    tr:hover {
+        background-color: #f1f1f1;
+    }
+
+    .no-data-row td {
+        padding: 20px;
+        color: #777;
+        font-style: italic;
+        text-align: center;
+    }
+
+    /* Edit Button Styles */
+    #data-table td:first-child {
+        text-align: center;
+        padding: 8px !important;
+    }
+
+    .edit-btn {
+        background-color: #3498db;
+        color: white;
+        padding: 6px 12px;
+        font-size: 14px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+        .edit-btn:hover {
+            background-color: #2980b9;
+        }
+
+    .save-btn {
+        background-color: #2ecc71;
+        color: white;
+        padding: 6px 12px;
+        font-size: 14px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+        .save-btn:hover {
+            background-color: #27ae60;
+        }
+
+    .cancel-btn {
+        background-color: #e74c3c;
+        color: white;
+        padding: 6px 12px;
+        font-size: 14px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+        .cancel-btn:hover {
+            background-color: #c0392b;
+        }
+
+    /* Other existing styles... */
+    .filter-container {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-bottom: 25px;
+        padding: 20px;
+        background-color: #2c3e50;
+        border-radius: 8px;
+        align-items: center;
+    }
+
+    input, select {
+        padding: 12px 15px;
+        font-size: 14px;
+        width: 100%;
+        max-width: 300px;
+        border-radius: 6px;
+        border: 1px solid #444;
+        background-color: #34495e;
+        color: white;
+        transition: all 0.3s;
+    }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+        }
+
+        input::placeholder {
+            color: #bbb;
+        }
+
+    .record-count {
+        margin: 20px 0;
+        font-weight: bold;
+        text-align: right;
+        font-size: 16px;
+        color: #4CAF50;
+    }
+
+    .phase-count-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-bottom: 30px;
+        justify-content: center;
+    }
+
+    .phase-box {
+        width: 180px;
+        height: 180px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-size: 15px;
+        font-weight: 600;
+        border-radius: 12px;
+        text-align: center;
+        padding: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+        .phase-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .phase-box span {
+            display: block;
+            font-size: 28px;
+            margin-top: 12px;
+            font-weight: 700;
+        }
+
+    .blue {
+        background-color: #3498db;
+    }
+
+    .black {
+        background-color: #2c3e50;
+    }
+
+    .green {
+        background-color: #2ecc71;
+    }
+
+    .red {
+        background-color: #e74c3c;
+    }
+
+    .orange {
+        background-color: #f39c12;
+    }
+
+    .add-record-container {
+        margin: 30px 0;
+        padding: 25px;
+        background: #2c3e50;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+        .add-record-container h3 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #4CAF50;
+            font-size: 20px;
+        }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .add-record-container input,
+    .add-record-container select {
+        width: 100%;
+        margin-bottom: 0;
+        padding: 12px;
+        background-color: #34495e;
+    }
+
+    .button-container {
+        display: flex;
+        justify-content: flex-end;
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .btn {
+        padding: 12px 25px;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        border-radius: 6px;
+        font-size: 16px;
+        transition: all 0.3s;
+    }
+
+    .add-btn {
+        background-color: #4CAF50;
+        color: white;
+    }
+
+        .add-btn:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+    .print-btn {
+        background-color: #3498db;
+        color: white;
+    }
+
+        .print-btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+    @@media screen and (max-width: 1200px) {
+        .phase-box {
+            width: 160px;
+            height: 160px;
+            font-size: 14px;
+        }
+
+            .phase-box span {
+                font-size: 24px;
+            }
+
+        .form-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
+
+    @@media screen and (max-width: 992px) {
+        .form-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        th, td {
+            padding: 10px 12px;
+        }
+    }
+
+    @@media screen and (max-width: 768px) {
+        .phase-count-container {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .phase-box {
+            width: 100%;
+            height: 140px;
+        }
+
+        .filter-container {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 15px;
+        }
+
+        input, select {
+            max-width: 100%;
+        }
+
+        .form-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        th, td {
+            font-size: 14px;
+            padding: 8px 10px;
+        }
+
+        h2 {
+            font-size: 24px;
+        }
+    }
+
+    @@media screen and (max-width: 576px) {
+        .table-container {
+            padding: 15px;
+        }
+
+        .add-record-container {
+            padding: 20px;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .phase-count-container {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="main-container">
+    <div class="table-container">
+        <h2>IPD Workspace Dashboard</h2>
+
+        <div class="phase-count-container">
+            <div class="phase-box blue" id="phase1Count">
+                #1 Idea Intake & Prioritization <br><span>0</span> products
+            </div>
+            <div class="phase-box black" id="phase2Count">
+                #2 Initial Discovery <br><span>0</span> products
+            </div>
+            <div class="phase-box green" id="phase3Count">
+                #3 Concept Development & Design <br><span>0</span> products
+            </div>
+            <div class="phase-box red" id="phase4Count">
+                #4 Design and Build <br><span>0</span> products
+            </div>
+            <div class="phase-box orange" id="phase5Count">
+                #5 University/Gus Roll Out <br><span>0</span> products
+            </div>
+            <div class="phase-box green" id="approvedCount">
+                Approved for Development <br><span>0</span> products
+            </div>
+        </div>
+
+        <div class="filter-container">
+            <input type="text" id="searchProduct" placeholder="Search Product...">
+            <select id="phaseFilter">
+                <option value="">All Phases</option>
+                <option value="Idea Intake & Prioritization">Idea Intake</option>
+                <option value="Initial Discovery">Initial Discovery</option>
+                <option value="Concept Development & Design">Concept Development</option>
+                <option value="Design and Build">Design and Build</option>
+                <option value="University/Gus Roll Out">University Roll Out</option>
+                <option value="Approved for Development">Approved</option>
+            </select>
+        </div>
+
+        <div class="add-record-container">
+            <h3>Add New Record</h3>
+            <div class="form-grid" id="newRecordForm">
+                <input type="text" id="newProduct" placeholder="Product">
+                <input type="text" id="newProductCategory" placeholder="Product Category">
+                <input type="text" id="newColleges" placeholder="Colleges">
+                <input type="text" id="newPhase" placeholder="Phase">
+                <input type="text" id="newOnTrackOffTrack" placeholder="On-Track/Off Track">
+                <input type="text" id="newDeansDashboardStatus" placeholder="Deans Dashboard Status">
+                <input type="text" id="newIdeaIntakeStart" placeholder="Idea Intake Start Date">
+                <input type="text" id="newIdeaIntakeEnd" placeholder="Idea Intake End Date">
+                <input type="text" id="newInitialDiscoveryStart" placeholder="Initial Discovery Start Date">
+                <input type="text" id="newInitialDiscoveryEnd" placeholder="Initial Discovery End Date">
+                <input type="text" id="newConceptDevelopmentStart" placeholder="Concept Development Start Date">
+                <input type="text" id="newConceptDevelopmentEnd" placeholder="Concept Development End Date">
+                <input type="text" id="newDesignAndBuildStart" placeholder="Design and Build Start Date">
+                <input type="text" id="newDesignAndBuildEnd" placeholder="Design and Build End Date">
+                <input type="text" id="newUniversityRollOutStart" placeholder="University Roll Out Start Date">
+                <input type="text" id="newUniversityRollOutEnd" placeholder="University Roll Out End Date">
+            </div>
+            <div class="button-container">
+                <button class="btn add-btn" onclick="addNewRecord()">Add Record</button>
+                <button class="btn print-btn" onclick="printPDF()">Print PDF</button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table id="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">Actions</th>
+                        <th style="width: 120px;">Product</th>
+                        <th style="width: 120px;">Product Category</th>
+                        <th style="width: 120px;">Colleges</th>
+                        <th style="width: 100px;">Phase</th>
+                        <th style="width: 100px;">On-Track/Off Track</th>
+                        <th style="width: 120px;">Deans Dashboard Status</th>
+                        <th style="width: 120px;">Idea Intake Start</th>
+                        <th style="width: 120px;">Idea Intake End</th>
+                        <th style="width: 120px;">Initial Discovery Start</th>
+                        <th style="width: 120px;">Initial Discovery End</th>
+                        <th style="width: 150px;">Concept Development Start</th>
+                        <th style="width: 150px;">Concept Development End</th>
+                        <th style="width: 120px;">Design and Build Start</th>
+                        <th style="width: 120px;">Design and Build End</th>
+                        <th style="width: 150px;">University Roll Out Start</th>
+                        <th style="width: 150px;">University Roll Out End</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="no-data-row">
+                        <td colspan="17">No data available</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="record-count" id="recordCount">Total Records: 0</div>
+    </div>
+</div>
+
+<script>document.addEventListener("DOMContentLoaded", function () {
+        const googleSheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSkzFZU2JvrwOhRuVN9FmveoimmcZqdsF7ZQwOTQjLWfTUp5khliHIuvd9JuRXDa5wW28vj_Ak9GNAM/pub?output=csv";
+
+        fetch(googleSheetUrl)
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.text();
+            })
+            .then(csvData => {
+                const rows = parseCSV(csvData);
+                const tbody = document.querySelector("#data-table tbody");
+                tbody.innerHTML = ''; // Clear existing rows (including the no-data row)
+
+                let phaseCounts = {
+                    'Idea Intake & Prioritization': 0,
+                    'Initial Discovery': 0,
+                    'Concept Development & Design': 0,
+                    'Design and Build': 0,
+                    'University/Gus Roll Out': 0,
+                    'Approved for Development': 0
+                };
+
+                if (rows.length > 1) {
+                    for (let i = 1; i < rows.length; i++) {
+                        const row = rows[i];
+                        const phase = row[3] ? row[3].trim() : '';  // Assuming phase is in column index 3
+                        if (phase && phaseCounts.hasOwnProperty(phase)) {
+                            phaseCounts[phase]++;
+                        }
+                        addRowToTable(row, i);
+                    }
+                    updatePhaseCounts(phaseCounts);
+                    updateRecordCount();
+                } else {
+                    // Add back the no-data row if no records found
+                    tbody.innerHTML = '<tr class="no-data-row"><td colspan="17">No data available</td></tr>';
+                    document.getElementById("recordCount").textContent = "No records found";
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching data:", error);
+                document.getElementById("recordCount").textContent = "Error loading data";
+            });
+
+        document.getElementById("searchProduct").addEventListener("input", filterTable);
+        document.getElementById("phaseFilter").addEventListener("change", filterTable);
+    });
+
+    // Improved CSV parsing that handles quoted fields with commas
+    function parseCSV(csvData) {
+        const lines = csvData.trim().split("\n");
+        return lines.map(line => {
+            // Match either quoted fields or non-comma sequences
+            return line.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g) || [];
+        });
+    }
+
+    function updatePhaseCounts(phaseCounts) {
+        document.getElementById("phase1Count").innerHTML = `#1 Idea Intake & Prioritization <br><span>${phaseCounts['Idea Intake & Prioritization']}</span> products`;
+        document.getElementById("phase2Count").innerHTML = `#2 Initial Discovery <br><span>${phaseCounts['Initial Discovery']}</span> products`;
+        document.getElementById("phase3Count").innerHTML = `#3 Concept Development & Design <br><span>${phaseCounts['Concept Development & Design']}</span> products`;
+        document.getElementById("phase4Count").innerHTML = `#4 Design and Build <br><span>${phaseCounts['Design and Build']}</span> products`;
+        document.getElementById("phase5Count").innerHTML = `#5 University/Gus Roll Out <br><span>${phaseCounts['University/Gus Roll Out']}</span> products`;
+        document.getElementById("approvedCount").innerHTML = `Approved for Development <br><span>${phaseCounts['Approved for Development']}</span> products`;
+    }
+
+    function addRowToTable(data, index) {
+        const tbody = document.querySelector("#data-table tbody");
+
+        // Remove the "no data" row if it exists
+        const noDataRow = tbody.querySelector(".no-data-row");
+        if (noDataRow) {
+            tbody.removeChild(noDataRow);
+        }
+
+        let tr = document.createElement("tr");
+        tr.dataset.rowIndex = index; // Store the row index for reference
+
+        // Add Edit button cell
+        let actionTd = document.createElement("td");
+        let editBtn = document.createElement("button");
+        editBtn.className = "edit-btn";
+        editBtn.textContent = "Edit";
+        editBtn.onclick = function () { editRow(tr); };
+        actionTd.appendChild(editBtn);
+        tr.appendChild(actionTd);
+
+        // Add all other data cells
+        data.forEach((cell, cellIndex) => {
+            let td = document.createElement("td");
+            let cellContent = cell.trim().replace(/^"(.*)"$/, '$1');
+            td.textContent = cellContent || '-';
+            td.dataset.columnIndex = cellIndex; // Store column index for editing
+            td.dataset.originalValue = cellContent; // Store original value for cancel
+
+            // Add data attributes for filtering
+            if (cellIndex === 0) td.dataset.product = cellContent.toLowerCase();
+            if (cellIndex === 3) td.dataset.phase = cellContent.toLowerCase();
+
+            tr.appendChild(td);
+        });
+
+        tbody.appendChild(tr);
+    }
+
+    function editRow(row) {
+        // Get all cells except the action cell
+        const cells = Array.from(row.querySelectorAll("td:not(:first-child)"));
+
+        // Replace each cell with an input field
+        cells.forEach((cell, index) => {
+            const currentValue = cell.textContent;
+            cell.innerHTML = `<input type="text" value="${currentValue}" style="width:100%;">`;
+        });
+
+        // Replace Edit button with Save and Cancel buttons
+        const actionCell = row.querySelector("td:first-child");
+        actionCell.innerHTML = `
+            <button class="save-btn" onclick="saveRow(this.parentElement.parentElement)">Save</button>
+            <button class="cancel-btn" onclick="cancelEdit(this.parentElement.parentElement)">Cancel</button>
+        `;
+    }
+
+    function saveRow(row) {
+        const inputs = row.querySelectorAll("input");
+        const newData = [];
+
+        inputs.forEach(input => {
+            newData.push(input.value);
+        });
+
+        // Update the row with new values
+        const cells = row.querySelectorAll("td:not(:first-child)");
+        cells.forEach((cell, index) => {
+            cell.textContent = newData[index];
+            cell.dataset.originalValue = newData[index]; // Update original value
+        });
+
+        // Restore Edit button
+        const actionCell = row.querySelector("td:first-child");
+        actionCell.innerHTML = `<button class="edit-btn" onclick="editRow(this.parentElement.parentElement)">Edit</button>`;
+
+        // Here you would typically also update your data source (e.g., send to server)
+        // updateDataInBackend(row.dataset.rowIndex, newData);
+    }
+
+    function cancelEdit(row) {
+        // Restore the original content
+        const cells = row.querySelectorAll("td:not(:first-child)");
+        cells.forEach(cell => {
+            cell.textContent = cell.dataset.originalValue || cell.textContent;
+        });
+
+        // Restore Edit button
+        const actionCell = row.querySelector("td:first-child");
+        actionCell.innerHTML = `<button class="edit-btn" onclick="editRow(this.parentElement.parentElement)">Edit</button>`;
+    }
+
+    function addNewRecord() {
+        let newRecord = [
+            document.getElementById("newProduct").value,
+            document.getElementById("newProductCategory").value,
+            document.getElementById("newColleges").value,
+            document.getElementById("newPhase").value,
+            document.getElementById("newOnTrackOffTrack").value,
+            document.getElementById("newDeansDashboardStatus").value,
+            document.getElementById("newIdeaIntakeStart").value,
+            document.getElementById("newIdeaIntakeEnd").value,
+            document.getElementById("newInitialDiscoveryStart").value,
+            document.getElementById("newInitialDiscoveryEnd").value,
+            document.getElementById("newConceptDevelopmentStart").value,
+            document.getElementById("newConceptDevelopmentEnd").value,
+            document.getElementById("newDesignAndBuildStart").value,
+            document.getElementById("newDesignAndBuildEnd").value,
+            document.getElementById("newUniversityRollOutStart").value,
+            document.getElementById("newUniversityRollOutEnd").value
+        ];
+
+        if (newRecord.some(field => !field.trim())) {
+            alert("Please fill in all fields.");
+            return;
+        }
+
+        addRowToTable(newRecord, document.querySelectorAll("#data-table tbody tr").length);
+        updateRecordCount();
+        clearForm();
+        filterTable(); // Apply current filters to the new record
+    }
+
+    function clearForm() {
+        document.querySelectorAll("#newRecordForm input").forEach(input => {
+            input.value = "";
+        });
+    }
+
+    function filterTable() {
+        const searchTerm = document.getElementById("searchProduct").value.toLowerCase().trim();
+        const phaseFilter = document.getElementById("phaseFilter").value.toLowerCase();
+        const rows = document.querySelectorAll("#data-table tbody tr");
+
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            if (row.classList.contains('no-data-row')) {
+                row.style.display = "none";
+                return;
+            }
+
+            const productCell = row.cells[1]; // Note: index 1 now because of action column
+            const phaseCell = row.cells[4];   // Phase is now in column 4 (0-based index)
+
+            const productMatch = productCell.textContent.toLowerCase().includes(searchTerm);
+            const phaseMatch = phaseFilter === '' ||
+                phaseCell.textContent.toLowerCase() === phaseFilter;
+
+            if (productMatch && phaseMatch) {
+                row.style.display = "";
+                visibleCount++;
+            } else {
+                row.style.display = "none";
+            }
+        });
+
+        // Show no-data message if no rows visible
+        const tbody = document.querySelector("#data-table tbody");
+        if (visibleCount === 0 && !tbody.querySelector('.no-data-row')) {
+            tbody.innerHTML = '<tr class="no-data-row"><td colspan="17">No matching records found</td></tr>';
+        } else if (visibleCount > 0) {
+            const noDataRow = tbody.querySelector('.no-data-row');
+            if (noDataRow) {
+                tbody.removeChild(noDataRow);
+            }
+        }
+
+        document.getElementById("recordCount").textContent = `Total Records: ${visibleCount}`;
+    }
+
+    function updateRecordCount() {
+        const visibleRows = document.querySelectorAll("#data-table tbody tr:not([style*='display: none']):not(.no-data-row)");
+        document.getElementById("recordCount").textContent = `Total Records: ${visibleRows.length}`;
+    }
+
+    function printPDF() {
+        window.print();
+    }</script>

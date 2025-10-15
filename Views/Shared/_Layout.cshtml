@@ -1,0 +1,86 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Northeastern IPD</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <style>
+        html, body {
+            height: 100%; /* Ensure the body takes up full height */
+            margin: 0;
+        }
+
+        .content-wrapper {
+            min-height: 100%; /* Ensure the content section takes at least the full height */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            flex: 1; /* Makes sure the container grows to fill available space */
+        }
+
+        footer {
+            margin-top: auto; /* Pushes the footer to the bottom */
+        }
+    </style>
+</head>
+<body>
+    <div class="content-wrapper">
+        <header>
+            <div class="container" style="background-color: black; height: 125px;">
+                <!-- Northeastern red -->
+                <div style="width:165px; float:left; padding-top:20px; padding-left:40px;">
+                    <img src="~/Images/northeastern-logo.png" height="100px" /><!-- Add Northeastern logo -->
+                </div>
+                <div style="display: flex; justify-content: center; align-items: center; height: 125px; color: white;">
+                    <div style="text-align: center; margin-left: -20px;">
+                        <h1 style="font-size: 36px; font-weight: bold; color: white;">Northeastern University</h1>
+                        <p style="font-size: 20px; color: white;">Innovation Planning and Development - Education & Services</p>
+                    </div>
+                </div>
+            </div>
+            <div class="container">
+                <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+                    <div class="container">
+                        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                                aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
+                            <ul class="navbar-nav flex-grow-1">
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </header>
+
+        <div class="container">
+            <main role="main" class="pb-3">
+                @RenderBody()
+            </main>
+        </div>
+
+        <footer class="border-top footer text-muted">
+            <div class="container text-center">
+                &copy; @DateTime.Now.Year - Northeastern University
+            </div>
+        </footer>
+    </div>
+    <li class="nav-item">
+        <a class="nav-link text-dark" asp-controller="ProgramSearch" asp-action="Index">Program Search</a>
+    </li>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

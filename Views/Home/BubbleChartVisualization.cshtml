@@ -1,0 +1,833 @@
+﻿@* Views/Home/BubbleChartVisualization.cshtml *@
+@model Northeastern_Personal_Workspace.Models.BubbleChartViewModel
+@{
+    ViewData["Title"] = "Overall Data - IPD";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI/ML Programs Bubble Chart - Fixed</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <style>
+        .bubble-chart-header {
+            background: white;
+            color: black;
+            padding: 2rem;
+            border-radius: 5px;
+            margin-bottom: 2rem;
+            border: 1px solid #ddd;
+        }
+
+        .legend-circle {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .stat-card {
+            transition: transform 0.3s ease;
+        }
+
+            .stat-card:hover {
+                transform: translateY(-2px);
+            }
+
+        .tooltip-bubble {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 13px;
+            max-width: 300px;
+            pointer-events: none;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .tooltip-header h6 {
+            margin: 0 0 10px 0;
+            color: #fff;
+            font-size: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 8px;
+        }
+
+        .tooltip-content {
+            display: grid;
+            gap: 6px;
+        }
+
+        .tooltip-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tooltip-label {
+            color: #bdc3c7;
+            font-weight: 500;
+        }
+
+        .tooltip-value {
+            color: #fff;
+            font-weight: 600;
+            text-align: right;
+            margin-left: 10px;
+        }
+
+        #bubbleChartContainer {
+            min-height: 700px;
+            background: white;
+            border-radius: 5px;
+        }
+
+        .bubble {
+            transition: all 0.3s ease;
+            opacity: 0.8;
+        }
+
+            .bubble:hover {
+                filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+                stroke: #000;
+                stroke-width: 2px;
+                opacity: 1;
+            }
+
+        .axis {
+            font-size: 12px;
+            color: #555;
+        }
+
+        .axis-label {
+            font-size: 14px;
+            font-weight: 600;
+            fill: #333;
+        }
+
+        .degree-level-line {
+            stroke: #ddd;
+            stroke-width: 1;
+            stroke-dasharray: 5,5;
+        }
+
+        .degree-level-label {
+            font-size: 11px;
+            font-weight: 500;
+            fill: #666;
+        }
+
+        .coordinate-label {
+            font-size: 10px;
+            font-weight: bold;
+            fill: #333;
+        }
+
+        .card {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid #ddd !important;
+        }
+
+        .card-header {
+            background: #f8f9fa !important;
+            color: black;
+            border-bottom: 1px solid #ddd !important;
+        }
+
+        .y-coordinate-display {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="bubble-chart-header text-center mb-4">
+                    <h1 class="display-4 font-weight-bold">
+                        AI/ML Academic Programs - Fixed Visualization
+                    </h1>
+                    <p class="lead">
+                        Interactive visualization of @Model.TotalProgramsCount programs across all degree levels
+                    </p>
+                    <div class="alert alert-light border">
+                        <strong>Data Source:</strong> @ViewBag.DataSource |
+                        <strong>Last Updated:</strong> @ViewBag.LastUpdated
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Controls -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card border">
+                        <div class="card-header bg-light">
+                            <h5 class="card-title mb-0">Visualization Filters</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <label for="degreeLevel" class="form-label">Degree Level:</label>
+                                    <select id="degreeLevel" class="form-select">
+                                        <option value="all">All Programs</option>
+                                        <option value="Graduate">Graduate Only</option>
+                                        <option value="Undergraduate">Undergraduate Only</option>
+                                        <option value="PhD">PhD/Doctorate</option>
+                                        <option value="Masters">Masters</option>
+                                        <option value="Certificate">Certificate</option>
+                                        <option value="Minor">Minor</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="academicDomain" class="form-label">Academic Domain:</label>
+                                    <select id="academicDomain" class="form-select">
+                                        <option value="all">All Domains</option>
+                                        <option value="computerscience">Computer Science</option>
+                                        <option value="engineering">Engineering</option>
+                                        <option value="business">Business</option>
+                                        <option value="healthsciences">Health Sciences</option>
+                                        <option value="maths">Mathematics & Stats</option>
+                                        <option value="socialscience">Social Sciences</option>
+                                        <option value="law">Law</option>
+                                        <option value="other">Other</option>
+                                    </select>
+
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="minCourses" class="form-label">Min Courses: <span id="minCoursesValue">1</span></label>
+                                    <input type="range" id="minCourses" class="form-range" min="1" max="30" value="1" step="1">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="maxCourses" class="form-label">Max Courses: <span id="maxCoursesValue">30</span></label>
+                                    <input type="range" id="maxCourses" class="form-range" min="1" max="30" value="30" step="1">
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <button id="resetFilters" class="btn btn-outline-secondary">Reset Filters</button>
+                                    <button id="exportData" class="btn btn-outline-dark ms-2">Export Data</button>
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <span class="badge bg-secondary fs-6" id="filteredCount">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bubble Chart Container -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card border">
+                        <div class="card-header bg-light">
+                            <h5 class="card-title mb-0">Program Distribution by Complexity and Degree Level</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div id="bubbleChartContainer" class="position-relative">
+                                <div class="y-coordinate-display">
+                                    <strong>Y-Coordinate Values:</strong><br>
+                                    PhD: 13.0<br>
+                                    Masters: 8.0<br>
+                                    Certificate: 3.0<br>
+                                    Major: -4.0<br>
+                                    Minor: -9.0
+                                </div>
+                                <svg id="bubbleChart"></svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Legend -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card border">
+                        <div class="card-header bg-light">
+                            <h5 class="card-title mb-0">Legend</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="mb-3">Degree Level (Color)</h6>
+                                    <div class="d-flex flex-wrap gap-3">
+                                        <div class="d-flex align-items-center">
+                                            <div class="legend-circle me-2" style="background-color: #590000;"></div>
+                                            <small>PhD/Doctorate (Y: 13.0)</small>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <div class="legend-circle me-2" style="background-color: #8B0000;"></div>
+                                            <small>Masters (Y: 8.0)</small>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <div class="legend-circle me-2" style="background-color: #C00000;"></div>
+                                            <small>Graduate Certificate (Y: 3.0)</small>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <div class="legend-circle me-2" style="background-color: #CC3333;"></div>
+                                            <small>Undergraduate Major (Y: -4.0)</small>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <div class="legend-circle me-2" style="background-color: #FF6666;"></div>
+                                            <small>Undergraduate Minor (Y: -9.0)</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="mb-3">Number of AI/ML Courses (Size)</h6>
+                                    <div class="d-flex flex-wrap gap-3">
+                                        <div class="d-flex align-items-center">
+                                            <div class="legend-size me-2" style="width: 32px; height: 32px; background-color: #999; border-radius: 50%;"></div>
+                                            <small>20+ courses</small>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <div class="legend-size me-2" style="width: 24px; height: 24px; background-color: #999; border-radius: 50%;"></div>
+                                            <small>10-19 courses</small>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <div class="legend-size me-2" style="width: 16px; height: 16px; background-color: #999; border-radius: 50%;"></div>
+                                            <small>5-9 courses</small>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <div class="legend-size me-2" style="width: 12px; height: 12px; background-color: #999; border-radius: 50%;"></div>
+                                            <small>3-4 courses</small>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <div class="legend-size me-2" style="width: 8px; height: 8px; background-color: #999; border-radius: 50%;"></div>
+                                            <small>1-2 courses</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Panel -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card border">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0">
+                            Program Statistics
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row" id="statisticsContainer">
+                            <div class="col-lg-2 col-md-3 col-sm-6 mb-3">
+                                <div class="stat-card text-center rounded p-3 h-100 border">
+                                    <div class="stat-number h3 mb-1">@Model.Statistics.TotalPrograms</div>
+                                    <div class="stat-label small">Total Programs</div>
+                                </div>
+                            </div>
+                            <div class="col-lg-2 col-md-3 col-sm-6 mb-3">
+                                <div class="stat-card text-center rounded p-3 h-100 border">
+                                    <div class="stat-number h3 mb-1">@Model.Statistics.PhdPrograms</div>
+                                    <div class="stat-label small">PhD Programs</div>
+                                </div>
+                            </div>
+                            <div class="col-lg-2 col-md-3 col-sm-6 mb-3">
+                                <div class="stat-card text-center rounded p-3 h-100 border">
+                                    <div class="stat-number h3 mb-1">@Model.Statistics.MastersPrograms</div>
+                                    <div class="stat-label small">Masters Programs</div>
+                                </div>
+                            </div>
+                            <div class="col-lg-2 col-md-3 col-sm-6 mb-3">
+                                <div class="stat-card text-center rounded p-3 h-100 border">
+                                    <div class="stat-number h3 mb-1">@Model.Statistics.CertificatePrograms</div>
+                                    <div class="stat-label small">Certificates</div>
+                                </div>
+                            </div>
+                            <div class="col-lg-2 col-md-3 col-sm-6 mb-3">
+                                <div class="stat-card text-center rounded p-3 h-100 border">
+                                    <div class="stat-number h3 mb-1">@Model.Statistics.UndergraduatePrograms</div>
+                                    <div class="stat-label small">Undergraduate</div>
+                                </div>
+                            </div>
+                            <div class="col-lg-2 col-md-3 col-sm-6 mb-3">
+                                <div class="stat-card text-center rounded p-3 h-100 border">
+                                    <div class="stat-number h3 mb-1">@Model.Statistics.MinorPrograms</div>
+                                    <div class="stat-label small">Minors</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-between align-items-center p-2 bg-light rounded border">
+                                    <span class="fw-bold">Average Complexity Score:</span>
+                                    <span class="badge bg-secondary">@Model.Statistics.FormattedAverageComplexity</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-between align-items-center p-2 bg-light rounded border">
+                                    <span class="fw-bold">Average Course Count:</span>
+                                    <span class="badge bg-secondary">@Model.Statistics.FormattedAverageCourses</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Domain Analysis -->
+        @if (Model.DomainGroups.Any())
+        {
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card border">
+                        <div class="card-header bg-light">
+                            <h5 class="card-title mb-0">
+                                Programs by Academic Domain
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Domain</th>
+                                            <th>Program Count</th>
+                                            <th>Avg Courses</th>
+                                            <th>Avg Complexity</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var domain in Model.DomainGroups)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <strong>@domain.DomainName</strong>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-secondary">@domain.ProgramCount</span>
+                                                </td>
+                                                <td>@domain.FormattedAverageCourses</td>
+                                                <td>@domain.FormattedAverageComplexity</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+
+
+    <!-- Tooltip -->
+    <div id="tooltip" class="tooltip-bubble" style="display: none;"></div>
+
+    <script>
+        // Initialize data from server (same as original code)
+        let allProgramsData = @Html.Raw(Json.Serialize(Model.Programs));
+        let filteredProgramsData = [...allProgramsData];
+
+        // Chart configuration with proper margins for Y-axis
+        const margin = { top: 60, right: 80, bottom: 80, left: 120 };
+        const width = 1200 - margin.left - margin.right;
+        const height = 800 - margin.top - margin.bottom;
+
+        // Create SVG
+        const svg = d3.select("#bubbleChart")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom);
+
+        const g = svg.append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        // Fixed scales with better range
+        const xScale = d3.scaleLinear()
+            .domain([0.5, 4.5])
+            .range([0, width]);
+
+        // Y-scale properly configured for the coordinate system
+        const yScale = d3.scaleLinear()
+            .domain([-12, 16])
+            .range([height, 0]);
+
+        const sizeScale = d3.scaleSqrt()
+            .domain([1, 30])
+            .range([8, 40]);
+
+        // Fixed Y-coordinate calculation with reduced jitter
+        function calculateYCoordinate(program) {
+            const degreeLevel = program.degreeLevel;
+            const degreeType = program.degreeType;
+            const domain = program.academicDomain;
+
+            let baseY = 0;
+
+            // Base position by degree level/type
+            if (degreeLevel === "Graduate") {
+                if (degreeType.includes("PhD") || degreeType.includes("Doctor")) {
+                    baseY = 13.0; // PhD Doctorate
+                } else if (degreeType.includes("Certificate")) {
+                    baseY = 3.0; // Grad Certificate
+                } else {
+                    baseY = 8.0; // Masters
+                }
+            } else { // Undergraduate
+                if (degreeType.includes("Minor")) {
+                    baseY = -9.0; // Undergrad Minor
+                } else {
+                    baseY = -4.0; // Undergrad Major
+                }
+            }
+
+            // Reduced domain-based jitter for horizontal separation
+            const domainJitter = {
+                'socialscience': 2,
+                'math': 1.5,
+                'healthscience': 1,
+                'computerscience': 0,
+                'business': -1,
+                'engineering': -1.5,
+                'law': -1.75,
+                'other': -2
+            }[domain?.toLowerCase().replace(' ', '')] || 0;
+
+            // Much smaller random jitter to maintain clear bands
+            //const randomJitter = (Math.random() - 0.5) * 0.5;
+
+            return baseY + domainJitter;
+        }
+
+        // Process data with Y-coordinates
+        function processData(data) {
+            return data.map(d => ({
+                ...d,
+                yCoordinate: calculateYCoordinate(d),
+                color: getColorForProgram(d)
+            }));
+        }
+
+        // Get color based on program type
+        function getColorForProgram(program) {
+            if (program.degreeLevel === "Graduate") {
+                if (program.degreeType.includes("PhD") || program.degreeType.includes("Doctor")) {
+                    return "#590000"; // Dark maroon for PhD
+                } else if (program.degreeType.includes("Certificate")) {
+                    return "#C00000"; // Medium red for Graduate Certificates
+                } else {
+                    return "#8B0000"; // Dark red for Masters
+                }
+            } else { // Undergraduate
+                if (program.degreeType.includes("Minor")) {
+                    return "#FF6666"; // Light red for Minors
+                } else {
+                    return "#CC3333"; // Medium-light red for Undergraduate Majors
+                }
+            }
+        }
+
+        // Create tooltip
+        const tooltip = d3.select("#tooltip");
+
+        // Create Y-axis with coordinate numbers
+        const yAxis = g.append("g")
+            .attr("class", "axis y-axis")
+            .call(d3.axisLeft(yScale)
+                .tickValues([-9, -4, 0, 3, 8, 13])
+                .tickFormat(d => d));
+
+        // Create X-axis
+        const xAxisPosition = yScale(0);
+        const xAxis = g.append("g")
+            .attr("class", "axis x-axis")
+            .attr("transform", `translate(0,${xAxisPosition})`)
+            .call(d3.axisBottom(xScale)
+                .tickValues([1, 2, 3, 4])
+                .tickFormat(() => ""));
+
+        // Add custom X-axis labels
+        const xLabels = [
+            { x: 1, text: "1. Basic" },
+            { x: 2, text: "2. Developing" },
+            { x: 3, text: "3. Proficient" },
+            { x: 4, text: "4. Mastery" }
+        ];
+
+        g.selectAll(".x-label")
+            .data(xLabels)
+            .enter()
+            .append("text")
+            .attr("class", "x-label")
+            .attr("x", d => xScale(d.x))
+            .attr("y", xAxisPosition + 20)
+            .style("text-anchor", "middle")
+            .style("font-size", "12px")
+            .style("font-weight", "500")
+            .style("fill", "#333")
+            .text(d => d.text);
+
+        // Add horizontal reference lines for each degree level
+        const degreeLevelLines = [
+            { y: 13.0, label: "PhD/Doctorate (13.0)" },
+            { y: 8.0, label: "Masters (8.0)" },
+            { y: 3.0, label: "Graduate Certificate (3.0)" },
+            { y: -4.0, label: "Undergraduate Major (-4.0)" },
+            { y: -9.0, label: "Undergraduate Minor (-9.0)" }
+        ];
+
+        degreeLevelLines.forEach(level => {
+            // Add reference line
+            g.append("line")
+                .attr("class", "degree-level-line")
+                .attr("x1", -10)
+                .attr("x2", width + 10)
+                .attr("y1", yScale(level.y))
+                .attr("y2", yScale(level.y))
+                .style("stroke", "#ddd")
+                .style("stroke-width", 1)
+                .style("stroke-dasharray", "5,5");
+
+            // Add coordinate label on the right side
+            g.append("text")
+                .attr("class", "coordinate-label")
+                .attr("x", width + 15)
+                .attr("y", yScale(level.y) + 3)
+                .style("text-anchor", "start")
+                .style("font-size", "10px")
+                .style("font-weight", "bold")
+                .style("fill", "#333")
+                .text(level.y);
+        });
+
+        // Add vertical grid lines
+        g.selectAll(".vertical-grid")
+            .data([1, 2, 3, 4])
+            .enter()
+            .append("line")
+            .attr("class", "vertical-grid")
+            .attr("x1", d => xScale(d))
+            .attr("x2", d => xScale(d))
+            .attr("y1", 0)
+            .attr("y2", height)
+            .style("stroke", "#f0f0f0")
+            .style("stroke-width", 1);
+
+        // Add axis labels
+        g.append("text")
+            .attr("class", "axis-label")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 0 - margin.left + 20)
+            .attr("x", 0 - (height / 2))
+            .style("text-anchor", "middle")
+            .text("Degree Level (Y-Coordinate)");
+
+        g.append("text")
+            .attr("class", "axis-label")
+            .attr("x", width / 2)
+            .attr("y", height + margin.bottom - 20)
+            .style("text-anchor", "middle")
+            .text("Complexity Score (X-Coordinate)");
+
+        // Update chart function
+        function updateChart() {
+            const processedData = processData(filteredProgramsData);
+
+            const bubbles = g.selectAll(".bubble")
+                .data(processedData, d => d.programName);
+
+            bubbles.exit()
+                .transition()
+                .duration(500)
+                .attr("r", 0)
+                .remove();
+
+            const bubblesEnter = bubbles.enter()
+                .append("circle")
+                .attr("class", "bubble")
+                .attr("r", 0)
+                .attr("cx", d => xScale(d.complexityScore))
+                .attr("cy", d => yScale(d.yCoordinate))
+                .style("fill", d => d.color)
+                .style("cursor", "pointer")
+                .style("opacity", 0.8);
+
+            bubblesEnter.merge(bubbles)
+                .transition()
+                .duration(750)
+                .attr("cx", d => xScale(d.complexityScore))
+                .attr("cy", d => yScale(d.yCoordinate))
+                .attr("r", d => sizeScale(d.totalAiMlCourses))
+                .style("fill", d => d.color);
+
+            // Add event listeners
+            g.selectAll(".bubble")
+                .on("mouseover", function(event, d) {
+                    d3.select(this)
+                        .style("stroke", "#000")
+                        .style("stroke-width", 2)
+                        .style("opacity", 1);
+
+                    tooltip
+                        .style("display", "block")
+                        .html(`
+                            <div class="tooltip-header">
+                                <h6>${d.programName}</h6>
+                            </div>
+                            <div class="tooltip-content">
+                                <div class="tooltip-row">
+                                    <span class="tooltip-label">Y-Coordinate:</span>
+                                    <span class="tooltip-value">${d.yCoordinate.toFixed(1)}</span>
+                                </div>
+                                <div class="tooltip-row">
+                                    <span class="tooltip-label">Complexity Score:</span>
+                                    <span class="tooltip-value">${d.complexityScore.toFixed(1)}</span>
+                                </div>
+                                <div class="tooltip-row">
+                                    <span class="tooltip-label">Total AI/ML Courses:</span>
+                                    <span class="tooltip-value">${d.totalAiMlCourses}</span>
+                                </div>
+                                <div class="tooltip-row">
+                                    <span class="tooltip-label">Required Courses:</span>
+                                    <span class="tooltip-value">${d.requiredCourses}</span>
+                                </div>
+                                <div class="tooltip-row">
+                                    <span class="tooltip-label">Elective Courses:</span>
+                                    <span class="tooltip-value">${d.electiveCourses}</span>
+                                </div>
+                                <div class="tooltip-row">
+                                    <span class="tooltip-label">Academic Domain:</span>
+                                    <span class="tooltip-value">${d.academicDomain}</span>
+                                </div>
+                                <div class="tooltip-row">
+                                    <span class="tooltip-label">Program Strengths:</span>
+                                    <span class="tooltip-value">${d.programStrengths}</span>
+                                </div>
+                            </div>
+                        `)
+                        .style("left", (event.pageX + 10) + "px")
+                        .style("top", (event.pageY - 10) + "px");
+                })
+                .on("mouseout", function() {
+                    d3.select(this)
+                        .style("stroke", "none")
+                        .style("opacity", 0.8);
+
+                    tooltip.style("display", "none");
+                });
+        }
+
+        // Filter functions
+        function filterData() {
+            const levelFilter = document.getElementById('degreeLevel').value;
+            const domainFilter = document.getElementById('academicDomain').value;
+            const minCourses = parseInt(document.getElementById('minCourses').value);
+            const maxCourses = parseInt(document.getElementById('maxCourses').value);
+
+            filteredProgramsData = allProgramsData.filter(d => {
+                let levelMatch = true;
+                let domainMatch = true;
+                let coursesMatch = d.totalAiMlCourses >= minCourses && d.totalAiMlCourses <= maxCourses;
+
+                if (levelFilter !== 'all') {
+                    switch(levelFilter) {
+                        case 'Graduate':
+                            levelMatch = d.degreeLevel === "Graduate";
+                            break;
+                        case 'Undergraduate':
+                            levelMatch = d.degreeLevel === "Undergraduate";
+                            break;
+                        case 'PhD':
+                            levelMatch = d.degreeType.includes("PhD") || d.degreeType.includes("Doctor");
+                            break;
+                        case 'Masters':
+                            levelMatch = d.degreeLevel === "Graduate" && !d.degreeType.includes("PhD") && !d.degreeType.includes("Certificate");
+                            break;
+                        case 'Certificate':
+                            levelMatch = d.degreeType.includes("Certificate");
+                            break;
+                        case 'Minor':
+                            levelMatch = d.degreeType.includes("Minor");
+                            break;
+                    }
+                }
+
+                if (domainFilter !== 'all') {
+                    domainMatch = d.academicDomain.toLowerCase().replace(' ', '') === domainFilter.toLowerCase();
+                }
+
+                return levelMatch && domainMatch && coursesMatch;
+            });
+
+            updateChart();
+            updateFilteredCount();
+        }
+
+        function updateFilteredCount() {
+            document.getElementById('filteredCount').textContent =
+                `Showing ${filteredProgramsData.length} of ${allProgramsData.length} programs`;
+        }
+
+        // Event listeners
+        document.getElementById('degreeLevel').addEventListener('change', filterData);
+        document.getElementById('academicDomain').addEventListener('change', filterData);
+        document.getElementById('minCourses').addEventListener('input', function() {
+            document.getElementById('minCoursesValue').textContent = this.value;
+            filterData();
+        });
+        document.getElementById('maxCourses').addEventListener('input', function() {
+            document.getElementById('maxCoursesValue').textContent = this.value;
+            filterData();
+        });
+
+        document.getElementById('resetFilters').addEventListener('click', function() {
+            document.getElementById('degreeLevel').value = 'all';
+            document.getElementById('academicDomain').value = 'all';
+            document.getElementById('minCourses').value = 1;
+            document.getElementById('maxCourses').value = 30;
+            document.getElementById('minCoursesValue').textContent = '1';
+            document.getElementById('maxCoursesValue').textContent = '30';
+            filterData();
+        });
+
+        // Export functionality
+        document.getElementById('exportData').addEventListener('click', function() {
+            const csvContent = "data:text/csv;charset=utf-8," +
+                "Program Name,Degree Level,Degree Type,Total Courses,Complexity Score,Y Coordinate,Academic Domain\n" +
+                filteredProgramsData.map(d => {
+                    const processed = processData([d])[0];
+                    return `"${d.programName}","${d.degreeLevel}","${d.degreeType}",${d.totalAiMlCourses},${d.complexityScore},${processed.yCoordinate.toFixed(1)},"${d.academicDomain}"`;
+                }).join("\n");
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "ai_ml_programs_data_fixed.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        // Initialize chart
+        function init() {
+            updateChart();
+            updateFilteredCount();
+        }
+
+        // Start the visualization
+        init();
+    </script>
+</body>
+</html>

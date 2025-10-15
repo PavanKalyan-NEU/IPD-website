@@ -1,0 +1,91 @@
+﻿@{
+    ViewData["Title"] = "Program Search";
+    var searchResults = ViewBag.SearchResults as List<Northeastern_Personal_Workspace.Models.ProgramSearchResult>;
+    var hasSearched = ViewBag.HasSearched ?? false;
+    var keywords = ViewBag.Keywords as string ?? "";
+}
+
+<div class="container mt-4">
+    <h1>Graduate Program Search</h1>
+    <p class="lead">Search for graduate programs by entering keywords. The search will look through program names, descriptions, degree types, and college names.</p>
+
+    <form action="@Url.Action("Search", "ProgramSearch")" method="post" class="mb-4">
+        @Html.AntiForgeryToken()
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-10">
+                        <label for="keywords" class="form-label">Enter Keywords (comma-separated)</label>
+                        <input type="text" class="form-control" id="keywords" name="keywords"
+                               placeholder="Enter your search terms here"
+                               value="@keywords" />
+                        <small class="form-text text-muted">
+                            Separate multiple keywords with commas
+                        </small>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">Search</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    @if (searchResults != null && searchResults.Any())
+    {
+        <h3>Search Results (@searchResults.Count programs found)</h3>
+
+        <div class="row">
+            @foreach (var result in searchResults)
+            {
+                <div class="col-12 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">@result.Program.FullProgramName</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <p><strong>College:</strong> @result.Program.College</p>
+
+                                    <div class="mb-3">
+                                        <strong>Program Description:</strong>
+                                        <div class="mt-2 p-3 bg-light border rounded">
+                                            @result.Program.Description
+                                        </div>
+                                    </div>
+
+                                    <div class="alert alert-info">
+                                        <strong>Why this program was selected:</strong>
+                                        <ul class="mb-0">
+                                            @foreach (var reason in result.MatchReasons)
+                                            {
+                                                <li>@reason</li>
+                                            }
+                                        </ul>
+                                    </div>
+
+                                    <p>
+                                        <strong>Relevance Score:</strong>
+                                        <span class="badge bg-success">@result.RelevanceScore.ToString("F1")</span>
+                                        <span class="text-muted ms-2">(Higher scores indicate better matches)</span>
+                                    </p>
+
+                                    <p class="text-muted">
+                                        <small>Found on page @result.Program.PageNumber of the catalog</small>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else if (hasSearched)
+    {
+        <div class="alert alert-warning">
+            No programs found matching your search criteria. Try different keywords or check your spelling.
+        </div>
+    }
+</div>

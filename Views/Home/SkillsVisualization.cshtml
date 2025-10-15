@@ -1,0 +1,491 @@
+﻿@{
+    ViewData["Title"] = "Skills Visualization";
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    :root {
+        --primary-color: #4361ee;
+        --secondary-color: #3f37c9;
+        --accent-color: #4895ef;
+        --text-dark: #2b2d42;
+        --text-medium: #4a4e69;
+        --text-light: #8e9aaf;
+        --bg-light: #f8f9fa;
+        --bg-white: #ffffff;
+        --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
+        --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+        --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+        --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        --border-radius: 12px;
+    }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--bg-light);
+        color: var(--text-medium);
+        margin: 0;
+        padding: 0;
+        line-height: 1.6;
+    }
+
+    .skills-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem;
+    }
+
+    .skills-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        animation: fadeIn 0.6s ease-out;
+    }
+
+        .skills-header h1 {
+            font-size: 2.75rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.75rem;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+
+        .skills-header p {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+    .search-box {
+        width: 100%;
+        max-width: 650px;
+        margin: 0 auto 3rem auto;
+        position: relative;
+        animation: slideUp 0.5s ease-out;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 1rem 1.5rem;
+        padding-left: 3rem;
+        border-radius: 50px;
+        border: none;
+        font-size: 1rem;
+        outline: none;
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition);
+        background-color: var(--bg-white);
+        color: var(--text-dark);
+    }
+
+        .search-input:focus {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+    .search-icon {
+        position: absolute;
+        left: 1.25rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-light);
+    }
+
+    .skills-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.75rem;
+        animation: fadeIn 0.8s ease-out;
+    }
+
+    .skill-card {
+        background: var(--bg-white);
+        border-radius: var(--border-radius);
+        padding: 1.75rem;
+        box-shadow: var(--shadow-sm);
+        cursor: pointer;
+        transition: var(--transition);
+        border: 1px solid rgba(0,0,0,0.05);
+        overflow: hidden;
+        position: relative;
+    }
+
+        .skill-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+            border-color: rgba(67, 97, 238, 0.2);
+        }
+
+        .skill-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 0;
+            background: linear-gradient(to bottom, var(--primary-color), var(--accent-color));
+            transition: height 0.3s ease;
+        }
+
+        .skill-card:hover::before {
+            height: 100%;
+        }
+
+    .skill-title {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .skill-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+
+    .skill-count {
+        font-size: 0.9rem;
+        color: var(--text-light);
+        margin-left: auto;
+        background: var(--bg-light);
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+    }
+
+    .skill-details {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease, margin-top 0.3s ease;
+    }
+
+    .skill-card.active .skill-details {
+        max-height: 500px;
+        margin-top: 1.25rem;
+    }
+
+    .skill-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+        .skill-list li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            transition: var(--transition);
+        }
+
+            .skill-list li:hover {
+                background-color: rgba(67, 97, 238, 0.05);
+                transform: translateX(5px);
+            }
+
+            .skill-list li:last-child {
+                border-bottom: none;
+            }
+
+    .skill-name {
+        flex-grow: 1;
+        font-weight: 500;
+    }
+
+    .skill-item-count {
+        font-size: 0.85rem;
+        color: var(--text-light);
+        background-color: var(--bg-light);
+        padding: 0.2rem 0.6rem;
+        border-radius: 50px;
+    }
+
+    .no-results {
+        text-align: center;
+        grid-column: 1 / -1;
+        padding: 3rem;
+        color: var(--text-light);
+        font-size: 1.1rem;
+    }
+
+    /* Animations */
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    @@keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        .skills-header h1 {
+            font-size: 2.25rem;
+        }
+
+        .skills-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .skills-header h1 {
+            font-size: 2rem;
+        }
+
+        .skill-card {
+            padding: 1.5rem;
+        }
+
+        .skill-title {
+            font-size: 1.25rem;
+        }
+    }
+</style>
+
+<div class="skills-container">
+    <div class="skills-header">
+        <h1>Skills Explorer</h1>
+        <p>Discover and explore the comprehensive skill sets across various domains</p>
+    </div>
+
+    <div class="search-box">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" class="search-input" id="skillSearch" placeholder="Search skill categories or skills..." />
+    </div>
+
+    <div class="skills-grid" id="skillsGrid">
+        <div class="no-results">Loading skill data...</div>
+    </div>
+</div>
+
+<script>const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRNvb4z8lN2aTeirdonnYQjMXK-TAatKX7AME4DeLaQmHAdmLzOsOb4qm50mKIRqnfykRgPBCr8vP1V/pub?output=csv";
+
+    // Get category icon based on first letter
+    function getCategoryIcon(category) {
+        return category.charAt(0).toUpperCase();
+    }
+
+    // Format numbers with commas
+    function formatNumber(num) {
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    async function fetchSkillData() {
+        try {
+            const response = await fetch(sheetURL);
+            if (!response.ok) throw new Error("Network response was not ok");
+
+            const text = await response.text();
+            const rows = text.split("\n").map(row => {
+                // Handle quoted CSV values that might contain commas
+                const matches = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+                return matches ? matches.map(cell => cell.replace(/^"|"$/g, '')) : [];
+            });
+
+            if (rows.length < 2) throw new Error("Not enough data in the spreadsheet");
+
+            const headers = rows[0];
+            const data = rows.slice(1);
+
+            // Group skills by category
+            const groupedSkills = {};
+            let totalSkills = 0;
+
+            data.forEach(row => {
+                if (row.length < 3) return; // Skip incomplete rows
+
+                const category = row[0]?.trim() || "Uncategorized";
+                const skillName = row[1]?.trim();
+                const count = parseInt(row[2]) || 0;
+
+                if (!skillName) return;
+
+                if (!groupedSkills[category]) {
+                    groupedSkills[category] = {
+                        skills: [],
+                        total: 0
+                    };
+                }
+
+                groupedSkills[category].skills.push({
+                    skill: skillName,
+                    count: count
+                });
+                groupedSkills[category].total += count;
+                totalSkills += count;
+            });
+
+            renderSkills(groupedSkills, totalSkills);
+        } catch (error) {
+            console.error("Error fetching skill data:", error);
+            document.getElementById("skillsGrid").innerHTML = `
+                <div class="no-results">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                    <p>Failed to load skill data. Please try again later.</p>
+                </div>
+            `;
+        }
+    }
+
+    function renderSkills(groupedSkills, totalSkills) {
+        const grid = document.getElementById("skillsGrid");
+
+        if (Object.keys(groupedSkills).length === 0) {
+            grid.innerHTML = `
+                <div class="no-results">
+                    <i class="fas fa-info-circle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                    <p>No skill data available.</p>
+                </div>
+            `;
+            return;
+        }
+
+        grid.innerHTML = "";
+
+        // Sort categories alphabetically
+        const sortedCategories = Object.keys(groupedSkills).sort();
+
+        sortedCategories.forEach(category => {
+            const categoryData = groupedSkills[category];
+            const card = document.createElement("div");
+            card.className = "skill-card";
+
+            // Calculate percentage of total skills
+            const percentage = Math.round((categoryData.total / totalSkills) * 100);
+
+            card.innerHTML = `
+                <div class="skill-title">
+                    <div class="skill-icon">${getCategoryIcon(category)}</div>
+                    ${category}
+                    <span class="skill-count">${formatNumber(categoryData.total)} skills</span>
+                </div>
+                <div class="skill-details">
+                    <div style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--accent-color);">
+                        <strong>${percentage}%</strong> of all skills
+                    </div>
+                    <ul class="skill-list">
+                        ${categoryData.skills
+                    .sort((a, b) => b.count - a.count)
+                    .map(item => `
+                                <li>
+                                    <span class="skill-name">${item.skill}</span>
+                                    <span class="skill-item-count">${formatNumber(item.count)}</span>
+                                </li>
+                            `)
+                    .join("")}
+                    </ul>
+                </div>
+            `;
+
+            // Toggle details on click
+            card.addEventListener("click", (e) => {
+                // Don't toggle if clicking on a link or interactive element
+                if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON') return;
+
+                // Close all other open cards
+                document.querySelectorAll(".skill-card").forEach(otherCard => {
+                    if (otherCard !== card) {
+                        otherCard.classList.remove("active");
+                    }
+                });
+
+                // Toggle current card
+                card.classList.toggle("active");
+            });
+
+            grid.appendChild(card);
+        });
+    }
+
+    // Search functionality with debounce
+    let searchTimeout;
+    document.getElementById("skillSearch").addEventListener("input", function () {
+        clearTimeout(searchTimeout);
+
+        searchTimeout = setTimeout(() => {
+            const term = this.value.trim().toLowerCase();
+            const cards = document.querySelectorAll(".skill-card");
+            let hasResults = false;
+
+            cards.forEach(card => {
+                const title = card.querySelector(".skill-title").textContent.toLowerCase();
+                const listItems = card.querySelectorAll(".skill-list li");
+
+                // Check if title matches
+                const titleMatch = title.includes(term);
+
+                // Check if any skill matches
+                let skillMatch = false;
+                listItems.forEach(li => {
+                    const skillText = li.textContent.toLowerCase();
+                    if (skillText.includes(term)) {
+                        li.style.display = "flex";
+                        skillMatch = true;
+                    } else {
+                        li.style.display = "none";
+                    }
+                });
+
+                // Show/hide card based on matches
+                if (titleMatch || skillMatch) {
+                    card.style.display = "block";
+                    hasResults = true;
+
+                    // Auto-open if search term is not empty
+                    if (term.length > 0) {
+                        card.classList.add("active");
+                    }
+                } else {
+                    card.style.display = "none";
+                }
+            });
+
+            // Show no results message if no matches
+            const noResults = document.querySelector(".no-results");
+            if (!hasResults && term.length > 0) {
+                if (!noResults) {
+                    const grid = document.getElementById("skillsGrid");
+                    grid.innerHTML = `
+                        <div class="no-results">
+                            <i class="fas fa-search" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                            <p>No skills found matching "${term}"</p>
+                        </div>
+                    `;
+                }
+            }
+        }, 300);
+    });
+
+    // Initialize
+    document.addEventListener("DOMContentLoaded", fetchSkillData);</script>

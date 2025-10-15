@@ -1,0 +1,1844 @@
+﻿@model EnrollmentDashboard.Models.DashboardViewModel
+@{
+    ViewData["Title"] = "Enrollment Analytics Dashboard";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] - Northeastern University</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <!-- jQuery (required for Select2) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Select2 CSS and JS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+
+    <style>
+        :root {
+            --neu-red: #C8102E;
+            --neu-dark-red: #A50020;
+            --neu-black: #000000;
+            --neu-gray: #4A4A4A;
+            --neu-light-gray: #F5F5F5;
+            --neu-white: #FFFFFF;
+            --neu-accent: #D41B2C;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #f0f0f0;
+            color: var(--neu-gray);
+            line-height: 1.6;
+        }
+
+        /* Header Styling */
+        .main-header {
+            background: linear-gradient(135deg, var(--neu-red) 0%, var(--neu-dark-red) 100%);
+            color: var(--neu-white);
+            padding: 2rem 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+            .main-header::before {
+                content: '';
+                position: absolute;
+                top: -50%;
+                right: -10%;
+                width: 50%;
+                height: 200%;
+                background: rgba(255,255,255,0.05);
+                transform: rotate(35deg);
+            }
+
+            .main-header h1 {
+                font-weight: 700;
+                font-size: 2.5rem;
+                margin-bottom: 0.5rem;
+                position: relative;
+                z-index: 1;
+            }
+
+            .main-header p {
+                font-size: 1.1rem;
+                opacity: 0.95;
+                position: relative;
+                z-index: 1;
+            }
+
+        /* Enhanced Card Design */
+        .dashboard-card {
+            background: var(--neu-white);
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+            margin-bottom: 1.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+            .dashboard-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 25px rgba(200,16,46,0.15);
+            }
+
+        .dashboard-card-header {
+            background: linear-gradient(to right, var(--neu-red), var(--neu-accent));
+            color: var(--neu-white);
+            padding: 1rem 1.5rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .dashboard-card-body {
+            padding: 1.5rem;
+        }
+
+        /* Filter Panel Design */
+        .filter-panel {
+            background: var(--neu-white);
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+            border-top: 4px solid var(--neu-red);
+        }
+
+        .filter-group {
+            background: var(--neu-light-gray);
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        .filter-label {
+            font-weight: 700;
+            color: var(--neu-gray);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        /* Custom Select Styling */
+        .custom-select {
+            border: 2px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 0.5rem 1rem;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            background-color: var(--neu-white);
+        }
+
+            .custom-select:focus {
+                border-color: var(--neu-red);
+                box-shadow: 0 0 0 0.2rem rgba(200,16,46,0.15);
+                outline: none;
+            }
+
+        /* Button Styling */
+        .btn-neu {
+            padding: 0.6rem 1.5rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: none;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-neu-primary {
+            background: linear-gradient(135deg, var(--neu-red), var(--neu-accent));
+            color: var(--neu-white);
+        }
+
+            .btn-neu-primary:hover {
+                background: linear-gradient(135deg, var(--neu-dark-red), var(--neu-red));
+                transform: translateY(-1px);
+                box-shadow: 0 4px 15px rgba(200,16,46,0.3);
+            }
+
+        .btn-neu-outline {
+            background: transparent;
+            border: 2px solid var(--neu-red);
+            color: var(--neu-red);
+        }
+
+            .btn-neu-outline:hover {
+                background: var(--neu-red);
+                color: var(--neu-white);
+                transform: translateY(-1px);
+            }
+
+        /* Metric Cards */
+        .metric-card {
+            background: linear-gradient(135deg, var(--neu-white) 0%, var(--neu-light-gray) 100%);
+            border-left: 5px solid var(--neu-red);
+            padding: 1.5rem;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+
+            .metric-card:hover {
+                transform: translateX(5px);
+                box-shadow: 0 4px 20px rgba(200,16,46,0.15);
+            }
+
+        .metric-icon {
+            font-size: 2.5rem;
+            color: var(--neu-red);
+            opacity: 0.8;
+            float: right;
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--neu-black);
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-label {
+            color: var(--neu-gray);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-change {
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+            .metric-change.positive {
+                color: #28a745;
+            }
+
+            .metric-change.negative {
+                color: #dc3545;
+            }
+
+        /* Chart Container Styling */
+        .chart-container {
+            position: relative;
+            height: 400px;
+            padding: 1rem;
+        }
+
+        .chart-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 10;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chart-btn {
+            background: var(--neu-white);
+            border: 2px solid #e0e0e0;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+            .chart-btn:hover {
+                border-color: var(--neu-red);
+                color: var(--neu-red);
+            }
+
+            .chart-btn.active {
+                background: var(--neu-red);
+                color: var(--neu-white);
+                border-color: var(--neu-red);
+            }
+
+        /* Program Comparison Section */
+        .comparison-panel {
+            background: linear-gradient(to bottom, var(--neu-white), #fafafa);
+            border-radius: 8px;
+            padding: 2rem;
+            margin-top: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid rgba(200,16,46,0.1);
+        }
+
+        .comparison-header {
+            border-bottom: 3px solid var(--neu-red);
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        /* New Comparison Tool Styles */
+        .comparison-controls {
+            background: var(--neu-light-gray);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .program-comparison-card {
+            background: var(--neu-white);
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            height: 100%;
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+        }
+
+            .program-comparison-card:hover {
+                border-color: var(--neu-red);
+                box-shadow: 0 4px 20px rgba(200,16,46,0.15);
+            }
+
+        .program-selector {
+            margin-bottom: 1.5rem;
+        }
+
+        .program-details {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+            .program-details h5 {
+                color: var(--neu-red);
+                font-weight: 700;
+                margin-bottom: 1rem;
+                padding-bottom: 0.5rem;
+                border-bottom: 2px solid var(--neu-red);
+            }
+
+        .metric-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+            .metric-item:last-child {
+                border-bottom: none;
+            }
+
+        .metric-highlight {
+            background: linear-gradient(135deg, var(--neu-red), var(--neu-accent));
+            color: var(--neu-white);
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+            .metric-highlight .value {
+                font-size: 2rem;
+                font-weight: 800;
+            }
+
+            .metric-highlight .label {
+                font-size: 0.85rem;
+                opacity: 0.9;
+            }
+
+        .comparison-summary-table th {
+            background: var(--neu-black);
+            color: var(--neu-white);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        .comparison-summary-table td {
+            padding: 1rem;
+            vertical-align: middle;
+        }
+
+        .comparison-summary-table tbody tr:hover {
+            background: rgba(200,16,46,0.05);
+        }
+
+        .metric-best {
+            color: var(--neu-red);
+            font-weight: 700;
+        }
+
+        .metric-worst {
+            color: #dc3545;
+            opacity: 0.7;
+        }
+
+        /* Table Styling */
+        .data-table {
+            background: var(--neu-white);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+        }
+
+            .data-table thead {
+                background: var(--neu-black);
+                color: var(--neu-white);
+            }
+
+            .data-table th {
+                padding: 1rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                font-size: 0.85rem;
+                letter-spacing: 0.5px;
+                border: none;
+            }
+
+            .data-table td {
+                padding: 1rem;
+                vertical-align: middle;
+                border-bottom: 1px solid #f0f0f0;
+            }
+
+            .data-table tbody tr:hover {
+                background: rgba(200,16,46,0.05);
+            }
+
+        .department-tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .coe-tag {
+            background: var(--neu-red);
+            color: var(--neu-white);
+        }
+
+        .cos-tag {
+            background: var(--neu-black);
+            color: var(--neu-white);
+        }
+
+        /* Progress Bar */
+        .progress-wrapper {
+            position: relative;
+            height: 25px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-neu {
+            background: linear-gradient(to right, var(--neu-red), var(--neu-accent));
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--neu-white);
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: width 0.3s ease;
+        }
+
+        /* Loading Animation */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(200,16,46,0.3);
+            border-radius: 50%;
+            border-top-color: var(--neu-red);
+            animation: spin 0.8s linear infinite;
+        }
+
+        @@keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Responsive */
+        @@media (max-width: 768px) {
+            .main-header h1 {
+                font-size: 1.8rem;
+            }
+
+            .metric-card {
+                margin-bottom: 1rem;
+            }
+
+            .chart-controls {
+                position: static;
+                margin-bottom: 1rem;
+                justify-content: center;
+            }
+
+            .comparison-card-col {
+                margin-bottom: 1rem;
+            }
+        }
+
+        /* Tooltips */
+        .tooltip-neu {
+            background: var(--neu-black);
+            color: var(--neu-white);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Animation classes */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Select2 Custom Styling */
+        .select2-container--classic .select2-selection--multiple {
+            border: 2px solid #e0e0e0;
+            border-radius: 4px;
+            min-height: 38px;
+        }
+
+        .select2-container--classic.select2-container--focus .select2-selection--multiple {
+            border-color: var(--neu-red);
+            box-shadow: 0 0 0 0.2rem rgba(200,16,46,0.15);
+        }
+
+        .select2-container--classic .select2-selection--multiple .select2-selection__choice {
+            background-color: var(--neu-red);
+            color: var(--neu-white);
+            border: none;
+            border-radius: 20px;
+            padding: 0 10px;
+        }
+
+        .select2-container--classic .select2-selection--multiple .select2-selection__choice__remove {
+            color: var(--neu-white);
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="main-header">
+        <div class="container">
+            <h1><i class="fas fa-chart-line me-2"></i>Enrollment Analytics Dashboard</h1>
+            <p>College of Engineering & College of Science - Northeastern University</p>
+        </div>
+    </div>
+
+    <div class="container mt-4">
+        <!-- Advanced Filter Panel -->
+        <div class="filter-panel">
+            <h4 class="mb-4"><i class="fas fa-filter me-2"></i>Advanced Filters & Controls</h4>
+
+            <form id="advancedFilterForm" method="post" asp-action="FilterData">
+                <!-- Primary Filters -->
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label class="filter-label">Department</label>
+                        <select name="Department" class="form-select custom-select" id="departmentFilter">
+                            <option value="All" selected="@(Model.Filters.Department == "All")">All Departments</option>
+                            <option value="COE" selected="@(Model.Filters.Department == "COE")">College of Engineering</option>
+                            <option value="COS" selected="@(Model.Filters.Department == "COS")">College of Science</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="filter-label">Academic Year</label>
+                        <select name="Year" class="form-select custom-select" id="yearFilter">
+                            <option value="All" selected="@(Model.Filters.Year == "All")">All Years</option>
+                            <option value="2023" selected="@(Model.Filters.Year == "2023")">2023</option>
+                            <option value="2024" selected="@(Model.Filters.Year == "2024")">2024</option>
+                            <option value="2025" selected="@(Model.Filters.Year == "2025")">2025</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="filter-label">Primary Metric</label>
+                        <select name="MetricType" class="form-select custom-select" id="metricFilter">
+                            <option value="Registered" selected="@(Model.Filters.MetricType == "Registered")">Registered Students</option>
+                            <option value="Opportunities" selected="@(Model.Filters.MetricType == "Opportunities")">Opportunities</option>
+                            <option value="Submitted" selected="@(Model.Filters.MetricType == "Submitted")">Applications Submitted</option>
+                            <option value="Completed" selected="@(Model.Filters.MetricType == "Completed")">Applications Completed</option>
+                            <option value="Admitted" selected="@(Model.Filters.MetricType == "Admitted")">Admitted</option>
+                            <option value="Confirmed" selected="@(Model.Filters.MetricType == "Confirmed")">Confirmed</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="filter-label">Display Top</label>
+                        <select name="TopN" class="form-select custom-select">
+                            <option value="5" selected="@(Model.Filters.TopN == 5)">Top 5 Programs</option>
+                            <option value="10" selected="@(Model.Filters.TopN == 10)">Top 10 Programs</option>
+                            <option value="20" selected="@(Model.Filters.TopN == 20)">Top 20 Programs</option>
+                            <option value="50" selected="@(Model.Filters.TopN == 50)">Top 50 Programs</option>
+                            <option value="100" selected="@(Model.Filters.TopN == 100)">All Programs</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Advanced Filter Groups -->
+                <div class="filter-group">
+                    <h6 class="mb-3"><i class="fas fa-search me-2"></i>Search & Range Filters</h6>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label class="filter-label">Search Programs</label>
+                            <input type="text" name="SearchTerm" class="form-control custom-select"
+                                   placeholder="Enter program name..." id="programSearch" value="@Model.Filters.SearchTerm">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="filter-label">Min Opportunities</label>
+                            <input type="number" name="MinOpportunities" class="form-control custom-select"
+                                   placeholder="0" min="0" value="@Model.Filters.MinOpportunities">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="filter-label">Max Opportunities</label>
+                            <input type="number" name="MaxOpportunities" class="form-control custom-select"
+                                   placeholder="10000" min="0" value="@Model.Filters.MaxOpportunities">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="filter-label">Min Conversion %</label>
+                            <input type="number" name="MinConversionRate" class="form-control custom-select"
+                                   placeholder="0" min="0" max="100" step="0.1" value="@Model.Filters.MinConversionRate">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="filter-label">Max Conversion %</label>
+                            <input type="number" name="MaxConversionRate" class="form-control custom-select"
+                                   placeholder="100" min="0" max="100" step="0.1" value="@Model.Filters.MaxConversionRate">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="text-end mt-3">
+                    <button type="button" class="btn btn-neu-outline" onclick="resetFilters()">
+                        <i class="fas fa-undo me-2"></i>Reset Filters
+                    </button>
+                    <button type="submit" class="btn btn-neu-primary">
+                        <i class="fas fa-check me-2"></i>Apply Filters
+                    </button>
+                    <button type="button" class="btn btn-neu-primary" onclick="exportDashboard()">
+                        <i class="fas fa-download me-2"></i>Export Data
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Key Metrics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="metric-card fade-in">
+                    <i class="fas fa-users metric-icon"></i>
+                    <div class="metric-value">@Model.Metrics.TotalOpportunities.ToString("N0")</div>
+                    <div class="metric-label">Total Opportunities</div>
+                    <div class="metric-change positive">
+                        <i class="fas fa-arrow-up"></i> 12.5% from last year
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card fade-in">
+                    <i class="fas fa-graduation-cap metric-icon"></i>
+                    <div class="metric-value">@Model.Metrics.TotalRegistered.ToString("N0")</div>
+                    <div class="metric-label">Total Registered</div>
+                    <div class="metric-change positive">
+                        <i class="fas fa-arrow-up"></i> 8.3% from last year
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card fade-in">
+                    <i class="fas fa-percentage metric-icon"></i>
+                    <div class="metric-value">@Model.Metrics.OverallConversionRate.ToString("F1")%</div>
+                    <div class="metric-label">Conversion Rate</div>
+                    <div class="metric-change negative">
+                        <i class="fas fa-arrow-down"></i> 2.1% from last year
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card fade-in">
+                    <i class="fas fa-globe metric-icon"></i>
+                    <div class="metric-value">@Model.Metrics.InternationalPercentage.ToString("F1")%</div>
+                    <div class="metric-label">International Mix</div>
+                    <div class="metric-change positive">
+                        <i class="fas fa-arrow-up"></i> 5.7% from last year
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive Charts -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="dashboard-card">
+                    <div class="dashboard-card-header">
+                        <span><i class="fas fa-funnel me-2"></i>Enrollment Funnel Analysis</span>
+                        <div class="chart-controls">
+                            <button class="chart-btn active" data-chart="funnel" data-type="bar">
+                                <i class="fas fa-chart-bar"></i>
+                            </button>
+                            <button class="chart-btn" data-chart="funnel" data-type="line">
+                                <i class="fas fa-chart-line"></i>
+                            </button>
+                            <button class="chart-btn" data-chart="funnel" data-type="radar">
+                                <i class="fas fa-chart-area"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="dashboard-card-body">
+                        <div class="chart-container">
+                            <canvas id="funnelChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="dashboard-card">
+                    <div class="dashboard-card-header">
+                        <span><i class="fas fa-globe me-2"></i>Student Demographics</span>
+                        <div class="chart-controls">
+                            <button class="chart-btn active" data-chart="demographics" data-type="doughnut">
+                                <i class="fas fa-chart-pie"></i>
+                            </button>
+                            <button class="chart-btn" data-chart="demographics" data-type="pie">
+                                <i class="fas fa-circle"></i>
+                            </button>
+                            <button class="chart-btn" data-chart="demographics" data-type="polarArea">
+                                <i class="fas fa-globe"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="dashboard-card-body">
+                        <div class="chart-container">
+                            <canvas id="demographicsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="dashboard-card">
+                    <div class="dashboard-card-header">
+                        <span><i class="fas fa-chart-line me-2"></i>Multi-Year Trend Analysis</span>
+                        <div class="chart-controls">
+                            <button class="chart-btn active" data-chart="trends" data-type="line">
+                                <i class="fas fa-chart-line"></i>
+                            </button>
+                            <button class="chart-btn" data-chart="trends" data-type="bar">
+                                <i class="fas fa-chart-bar"></i>
+                            </button>
+                            <button class="chart-btn" data-chart="trends" data-type="area">
+                                <i class="fas fa-chart-area"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="dashboard-card-body">
+                        <div class="chart-container">
+                            <canvas id="trendsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stacked Bar Chart for All Programs -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="dashboard-card">
+                    <div class="dashboard-card-header">
+                        <span><i class="fas fa-layer-group me-2"></i>Complete Enrollment Overview - All Programs</span>
+                        <div class="chart-controls">
+                            <button class="chart-btn active" data-chart="stacked" data-type="bar">
+                                <i class="fas fa-chart-bar"></i>
+                            </button>
+                            <button class="chart-btn" data-chart="stacked" data-type="horizontalBar">
+                                <i class="fas fa-bars"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="dashboard-card-body">
+                        <div class="chart-container" style="height: 600px;">
+                            <canvas id="stackedChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Advanced Program Comparison Tool - New Design -->
+        <div class="comparison-panel">
+            <div class="comparison-header">
+                <h4><i class="fas fa-balance-scale me-2"></i>Advanced Program Comparison Tool</h4>
+                <p class="text-muted mb-0">Compare up to 4 programs side by side with detailed metrics and visualizations</p>
+            </div>
+
+            <!-- Comparison Controls -->
+            <div class="comparison-controls mb-4">
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="filter-label">Comparison Mode</label>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-neu-outline active" onclick="setComparisonMode(2)">
+                                <i class="fas fa-columns"></i> 2 Programs
+                            </button>
+                            <button type="button" class="btn btn-neu-outline" onclick="setComparisonMode(3)">
+                                <i class="fas fa-th"></i> 3 Programs
+                            </button>
+                            <button type="button" class="btn btn-neu-outline" onclick="setComparisonMode(4)">
+                                <i class="fas fa-th-large"></i> 4 Programs
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <button class="btn btn-neu-primary" onclick="clearComparison()">
+                            <i class="fas fa-undo"></i> Clear All
+                        </button>
+                        <button class="btn btn-neu-primary" onclick="exportComparison()">
+                            <i class="fas fa-download"></i> Export Comparison
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comparison Cards Container -->
+            <div id="comparisonCardsContainer" class="row mb-4">
+                <!-- Program 1 -->
+                <div class="col-md-6 comparison-card-col" data-program-index="0">
+                    <div class="program-comparison-card">
+                        <div class="program-selector">
+                            <label class="filter-label">Select Program 1</label>
+                            <select class="form-select custom-select program-dropdown" data-index="0" onchange="updateProgramComparison(0)">
+                                <option value="">-- Choose Program --</option>
+                                @foreach (var program in Model.AllData.OrderBy(p => p.ProgramName))
+                                {
+                                    <option value="@program.ProgramName" data-department="@program.Department">
+                                        @program.ProgramName (@program.Department)
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                        <div class="program-details" style="display: none;">
+                            <!-- Program details will be populated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Program 2 -->
+                <div class="col-md-6 comparison-card-col" data-program-index="1">
+                    <div class="program-comparison-card">
+                        <div class="program-selector">
+                            <label class="filter-label">Select Program 2</label>
+                            <select class="form-select custom-select program-dropdown" data-index="1" onchange="updateProgramComparison(1)">
+                                <option value="">-- Choose Program --</option>
+                                @foreach (var program in Model.AllData.OrderBy(p => p.ProgramName))
+                                {
+                                    <option value="@program.ProgramName" data-department="@program.Department">
+                                        @program.ProgramName (@program.Department)
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                        <div class="program-details" style="display: none;">
+                            <!-- Program details will be populated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Program 3 (Initially Hidden) -->
+                <div class="col-md-4 comparison-card-col" data-program-index="2" style="display: none;">
+                    <div class="program-comparison-card">
+                        <div class="program-selector">
+                            <label class="filter-label">Select Program 3</label>
+                            <select class="form-select custom-select program-dropdown" data-index="2" onchange="updateProgramComparison(2)">
+                                <option value="">-- Choose Program --</option>
+                                @foreach (var program in Model.AllData.OrderBy(p => p.ProgramName))
+                                {
+                                    <option value="@program.ProgramName" data-department="@program.Department">
+                                        @program.ProgramName (@program.Department)
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                        <div class="program-details" style="display: none;">
+                            <!-- Program details will be populated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Program 4 (Initially Hidden) -->
+                <div class="col-md-3 comparison-card-col" data-program-index="3" style="display: none;">
+                    <div class="program-comparison-card">
+                        <div class="program-selector">
+                            <label class="filter-label">Select Program 4</label>
+                            <select class="form-select custom-select program-dropdown" data-index="3" onchange="updateProgramComparison(3)">
+                                <option value="">-- Choose Program --</option>
+                                @foreach (var program in Model.AllData.OrderBy(p => p.ProgramName))
+                                {
+                                    <option value="@program.ProgramName" data-department="@program.Department">
+                                        @program.ProgramName (@program.Department)
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                        <div class="program-details" style="display: none;">
+                            <!-- Program details will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comparison Visualizations -->
+            <div class="row" id="comparisonVisualizationsSection" style="display: none;">
+                <div class="col-md-12">
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header">
+                            <span><i class="fas fa-chart-bar me-2"></i>Side-by-Side Metrics Comparison</span>
+                        </div>
+                        <div class="dashboard-card-body">
+                            <div class="chart-container" style="height: 400px;">
+                                <canvas id="comparisonBarChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comparison Summary Table -->
+            <div class="row mt-4" id="comparisonSummarySection" style="display: none;">
+                <div class="col-md-12">
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header">
+                            <span><i class="fas fa-table me-2"></i>Detailed Comparison Summary</span>
+                        </div>
+                        <div class="dashboard-card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table comparison-summary-table mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th width="25%">Metric</th>
+                                            <th width="18.75%" class="program-column" data-index="0">Program 1</th>
+                                            <th width="18.75%" class="program-column" data-index="1">Program 2</th>
+                                            <th width="18.75%" class="program-column" data-index="2" style="display: none;">Program 3</th>
+                                            <th width="18.75%" class="program-column" data-index="3" style="display: none;">Program 4</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="comparisonSummaryBody">
+                                        <!-- Will be populated dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="mt-4">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <span><i class="fas fa-table me-2"></i>Program Performance Details</span>
+                </div>
+                <div class="dashboard-card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table data-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th width="5%">Rank</th>
+                                    <th width="25%">Program Name</th>
+                                    <th width="10%">Department</th>
+                                    <th width="12%">@Model.Filters.MetricType</th>
+                                    <th width="10%">Total %</th>
+                                    <th width="18%">Conversion Rate</th>
+                                    <th width="10%">Int'l %</th>
+                                    <th width="10%">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    int rank = 1;
+                                    foreach (var program in Model.TopPrograms)
+                                    {
+                                        <tr>
+                                            <td class="text-center">
+                                                <span class="badge bg-secondary">#@rank</span>
+                                            </td>
+                                            <td>
+                                                <strong>@program.ProgramName</strong>
+                                            </td>
+                                            <td>
+                                                <span class="department-tag @(program.Department == "COE" ? "coe-tag" : "cos-tag")">
+                                                    @program.Department
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <strong>@program.Value.ToString("N0")</strong>
+                                            </td>
+                                            <td>@program.Percentage.ToString("F1")%</td>
+                                            <td>
+                                                <div class="progress-wrapper">
+                                                    <div class="progress-bar-neu" style="width: @program.ConversionRate%">
+                                                        @program.ConversionRate.ToString("F1")%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>@program.InternationalPercentage.ToString("F1")%</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-neu-outline"
+                                                        onclick="addToComparison('@program.ProgramName.Replace("'", "\\'"))')">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        rank++;
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize variables
+        let charts = {};
+        let programData = @Html.Raw(Json.Serialize(Model.AllData));
+        let selectedPrograms = [];
+
+        // Global variables for comparison
+        let comparisonMode = 2;
+        let selectedProgramsData = [null, null, null, null];
+        let comparisonBarChart = null;
+
+        // Northeastern color palette
+        const neuColors = {
+            primary: '#C8102E',
+            secondary: '#000000',
+            accent: '#D41B2C',
+            gray: '#4A4A4A',
+            lightGray: '#F5F5F5',
+            palette: ['#C8102E', '#000000', '#4A4A4A', '#2E8B57', '#FF8C00', '#4169E1', '#8B008B', '#20B2AA']
+        };
+
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing dashboard...');
+
+            // Normalize property names in programData
+            if (programData && programData.length > 0) {
+                programData = programData.map(program => {
+                    // Create a normalized object with consistent property names
+                    const normalized = {};
+
+                    // Copy all properties, converting to lowercase for consistency
+                    Object.keys(program).forEach(key => {
+                        normalized[key.toLowerCase()] = program[key];
+                    });
+
+                    // Ensure we have the expected property names with correct casing
+                    normalized.programName = program.ProgramName || program.programName || '';
+                    normalized.department = program.Department || program.department || '';
+
+                    // Copy year-specific data with correct casing
+                    ['2023', '2024', '2025'].forEach(year => {
+                        ['opportunities', 'submitted', 'completed', 'admitted', 'confirmed', 'registered', 'international'].forEach(metric => {
+                            const key = metric + year;
+                            const capitalizedKey = metric.charAt(0).toUpperCase() + metric.slice(1) + year;
+                            normalized[key] = program[capitalizedKey] || program[key] || 0;
+                        });
+                    });
+
+                    return normalized;
+                });
+
+                console.log('Program data normalized:', programData.length + ' programs loaded');
+            }
+
+            // Initialize all charts
+            initializeCharts();
+
+            // Add event listeners for chart type changes
+            document.querySelectorAll('.chart-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const chart = this.getAttribute('data-chart');
+                    const type = this.getAttribute('data-type');
+                    changeChartType(chart, type, this);
+                });
+            });
+        });
+
+        // Initialize all charts
+        async function initializeCharts() {
+            try {
+                console.log('Initializing charts...');
+                await loadFunnelChart();
+                await loadDemographicsChart();
+                await loadTrendsChart();
+                await loadStackedChart();
+                console.log('All charts initialized');
+            } catch (error) {
+                console.error('Error initializing charts:', error);
+            }
+        }
+
+        // Load Funnel Chart
+        async function loadFunnelChart() {
+            try {
+                const response = await fetch(`/Dashboard/GetChartData?department=@Model.Filters.Department&year=@Model.Filters.Year&chartType=enrollment`);
+                const data = await response.json();
+
+                const ctx = document.getElementById('funnelChart');
+                if (!ctx) {
+                    console.error('Funnel chart canvas not found');
+                    return;
+                }
+
+                charts.funnel = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.labels || [],
+                        datasets: [{
+                            label: 'Students',
+                            data: data.data || [],
+                            backgroundColor: [
+                                'rgba(200, 16, 46, 0.8)',
+                                'rgba(0, 0, 0, 0.8)',
+                                'rgba(74, 74, 74, 0.8)',
+                                'rgba(46, 139, 87, 0.8)',
+                                'rgba(255, 140, 0, 0.8)',
+                                'rgba(65, 105, 225, 0.8)'
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.parsed.y.toLocaleString() + ' students';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return value.toLocaleString();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                console.log('Funnel chart loaded');
+            } catch (error) {
+                console.error('Error loading funnel chart:', error);
+            }
+        }
+
+        // Load Demographics Chart
+        async function loadDemographicsChart() {
+            try {
+                const response = await fetch(`/Dashboard/GetChartData?department=@Model.Filters.Department&year=@Model.Filters.Year&chartType=international`);
+                const data = await response.json();
+
+                const ctx = document.getElementById('demographicsChart');
+                if (!ctx) {
+                    console.error('Demographics chart canvas not found');
+                    return;
+                }
+
+                charts.demographics = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.labels || [],
+                        datasets: [{
+                            data: data.data || [],
+                            backgroundColor: ['#C8102E', '#000000'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 20,
+                                    usePointStyle: true,
+                                    font: { size: 14 }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : 0;
+                                        return context.label + ': ' + context.parsed.toLocaleString() + ' (' + percentage + '%)';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                console.log('Demographics chart loaded');
+            } catch (error) {
+                console.error('Error loading demographics chart:', error);
+            }
+        }
+
+        // Load Trends Chart
+        async function loadTrendsChart() {
+            try {
+                const response = await fetch(`/Dashboard/GetChartData?department=@Model.Filters.Department&year=All&chartType=trend`);
+                const data = await response.json();
+
+                const ctx = document.getElementById('trendsChart');
+                if (!ctx) {
+                    console.error('Trends chart canvas not found');
+                    return;
+                }
+
+                charts.trends = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels || [],
+                        datasets: (data.datasets || []).map((dataset, index) => ({
+                            ...dataset,
+                            borderColor: neuColors.palette[index % neuColors.palette.length],
+                            backgroundColor: neuColors.palette[index % neuColors.palette.length] + '20',
+                            borderWidth: 3,
+                            tension: 0.3,
+                            pointRadius: 6,
+                            pointHoverRadius: 8,
+                            pointBackgroundColor: neuColors.palette[index % neuColors.palette.length]
+                        }))
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 15
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return value.toLocaleString();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                console.log('Trends chart loaded');
+            } catch (error) {
+                console.error('Error loading trends chart:', error);
+            }
+        }
+
+        // Load Stacked Bar Chart
+        async function loadStackedChart() {
+            try {
+                // Prepare data for stacked chart
+                const programs = programData.slice(0, 20); // Show top 20 programs
+                const metrics = ['Opportunities', 'Submitted', 'Completed', 'Admitted', 'Confirmed', 'Registered'];
+
+                const datasets = metrics.map((metric, index) => {
+                    return {
+                        label: metric,
+                        data: programs.map(p => {
+                            const year = '@Model.Filters.Year';
+                            const metricLower = metric.toLowerCase();
+                            if (year === 'All') {
+                                return (p[metricLower + '2023'] || 0) +
+                                       (p[metricLower + '2024'] || 0) +
+                                       (p[metricLower + '2025'] || 0);
+                            } else {
+                                return p[metricLower + year] || 0;
+                            }
+                        }),
+                        backgroundColor: neuColors.palette[index % neuColors.palette.length],
+                        borderWidth: 0
+                    };
+                });
+
+                const ctx = document.getElementById('stackedChart');
+                if (!ctx) {
+                    console.error('Stacked chart canvas not found');
+                    return;
+                }
+
+                charts.stacked = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: programs.map(p => p.programName),
+                        datasets: datasets
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 10
+                                }
+                            },
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false
+                            }
+                        },
+                        scales: {
+                            x: {
+                                stacked: true,
+                                ticks: {
+                                    autoSkip: false,
+                                    maxRotation: 45,
+                                    minRotation: 45
+                                }
+                            },
+                            y: {
+                                stacked: true,
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return value.toLocaleString();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                console.log('Stacked chart loaded');
+            } catch (error) {
+                console.error('Error loading stacked chart:', error);
+            }
+        }
+
+        // Change chart type
+        function changeChartType(chartName, newType, button) {
+            const chart = charts[chartName];
+            if (!chart) {
+                console.error('Chart not found:', chartName);
+                return;
+            }
+
+            // Update button states
+            button.parentElement.querySelectorAll('.chart-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            button.classList.add('active');
+
+            // Special handling for certain chart types
+            if (newType === 'area') {
+                chart.config.type = 'line';
+                chart.data.datasets.forEach(dataset => {
+                    dataset.fill = true;
+                });
+            } else if (newType === 'horizontalBar') {
+                chart.config.type = 'bar';
+                chart.options.indexAxis = 'y';
+            } else {
+                chart.config.type = newType;
+                if (chart.data.datasets) {
+                    chart.data.datasets.forEach(dataset => {
+                        dataset.fill = false;
+                    });
+                }
+                if (chart.options) {
+                    chart.options.indexAxis = 'x';
+                }
+            }
+
+            chart.update();
+        }
+
+        // Calculate metrics for a program
+        function calculateProgramMetrics(program, year) {
+            let metrics = {
+                opportunities: 0,
+                submitted: 0,
+                completed: 0,
+                admitted: 0,
+                confirmed: 0,
+                registered: 0,
+                conversionRate: 0,
+                internationalPercentage: 0
+            };
+
+            if (year === 'All') {
+                metrics.opportunities = (program.opportunities2023 || 0) + (program.opportunities2024 || 0) + (program.opportunities2025 || 0);
+                metrics.submitted = (program.submitted2023 || 0) + (program.submitted2024 || 0) + (program.submitted2025 || 0);
+                metrics.completed = (program.completed2023 || 0) + (program.completed2024 || 0) + (program.completed2025 || 0);
+                metrics.admitted = (program.admitted2023 || 0) + (program.admitted2024 || 0) + (program.admitted2025 || 0);
+                metrics.confirmed = (program.confirmed2023 || 0) + (program.confirmed2024 || 0) + (program.confirmed2025 || 0);
+                metrics.registered = (program.registered2023 || 0) + (program.registered2024 || 0) + (program.registered2025 || 0);
+
+                // Calculate weighted international percentage
+                let totalRegistered = metrics.registered;
+                let totalInternational = (program.international2023 || 0) + (program.international2024 || 0) + (program.international2025 || 0);
+                metrics.internationalPercentage = totalRegistered > 0 ? (totalInternational / totalRegistered * 100) : 0;
+            } else {
+                metrics.opportunities = program[`opportunities${year}`] || 0;
+                metrics.submitted = program[`submitted${year}`] || 0;
+                metrics.completed = program[`completed${year}`] || 0;
+                metrics.admitted = program[`admitted${year}`] || 0;
+                metrics.confirmed = program[`confirmed${year}`] || 0;
+                metrics.registered = program[`registered${year}`] || 0;
+
+                let totalInternational = program[`international${year}`] || 0;
+                metrics.internationalPercentage = metrics.registered > 0 ? (totalInternational / metrics.registered * 100) : 0;
+            }
+
+            // Calculate conversion rate
+            metrics.conversionRate = metrics.opportunities > 0 ? (metrics.registered / metrics.opportunities * 100) : 0;
+
+            return metrics;
+        }
+
+        // Reset filters
+        function resetFilters() {
+            document.getElementById('advancedFilterForm').reset();
+        }
+
+        // Export functionality
+        function exportDashboard() {
+            window.location.href = `/Dashboard/ExportData?format=csv&department=@Model.Filters.Department&year=@Model.Filters.Year`;
+        }
+
+        // COMPARISON TOOL FUNCTIONS
+
+        // Set comparison mode (2, 3, or 4 programs)
+        function setComparisonMode(mode) {
+            comparisonMode = mode;
+
+            // Update button states
+            document.querySelectorAll('.comparison-controls .btn-group button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.closest('button').classList.add('active');
+
+            // Update grid layout
+            const cards = document.querySelectorAll('.comparison-card-col');
+            const columns = document.querySelectorAll('.program-column');
+
+            // Hide all first
+            cards.forEach((card, index) => {
+                if (index >= 2) card.style.display = 'none';
+                card.classList.remove('col-md-3', 'col-md-4', 'col-md-6');
+            });
+            columns.forEach((col, index) => {
+                if (index >= 2) col.style.display = 'none';
+            });
+
+            // Show and resize based on mode
+            switch(mode) {
+                case 2:
+                    cards[0].classList.add('col-md-6');
+                    cards[1].classList.add('col-md-6');
+                    cards[0].style.display = 'block';
+                    cards[1].style.display = 'block';
+                    break;
+                case 3:
+                    cards[0].classList.add('col-md-4');
+                    cards[1].classList.add('col-md-4');
+                    cards[2].classList.add('col-md-4');
+                    cards[0].style.display = 'block';
+                    cards[1].style.display = 'block';
+                    cards[2].style.display = 'block';
+                    columns[2].style.display = '';
+                    break;
+                case 4:
+                    cards[0].classList.add('col-md-3');
+                    cards[1].classList.add('col-md-3');
+                    cards[2].classList.add('col-md-3');
+                    cards[3].classList.add('col-md-3');
+                    cards[0].style.display = 'block';
+                    cards[1].style.display = 'block';
+                    cards[2].style.display = 'block';
+                    cards[3].style.display = 'block';
+                    columns[2].style.display = '';
+                    columns[3].style.display = '';
+                    break;
+            }
+
+            updateComparisonVisualization();
+        }
+
+        // Update program comparison when dropdown changes
+        function updateProgramComparison(index) {
+            const dropdown = document.querySelector(`.program-dropdown[data-index="${index}"]`);
+            const selectedProgram = dropdown.value;
+            const card = document.querySelector(`.comparison-card-col[data-program-index="${index}"]`);
+            const detailsDiv = card.querySelector('.program-details');
+
+            if (!selectedProgram) {
+                detailsDiv.style.display = 'none';
+                selectedProgramsData[index] = null;
+                updateComparisonVisualization();
+                return;
+            }
+
+            // Find program data
+            const program = programData.find(p => p.programName === selectedProgram);
+            if (!program) return;
+
+            // Calculate metrics
+            const year = '@Model.Filters.Year';
+            const metrics = calculateProgramMetrics(program, year);
+
+            // Store selected program data
+            selectedProgramsData[index] = {
+                name: program.programName,
+                department: program.department,
+                metrics: metrics
+            };
+
+            // Create program details HTML
+            detailsDiv.innerHTML = `
+                <h5>${program.programName}</h5>
+                <div class="department-tag ${program.department === 'COE' ? 'coe-tag' : 'cos-tag'} mb-3">
+                    ${program.department}
+                </div>
+
+                <div class="metric-highlight">
+                    <div class="value">${metrics.conversionRate.toFixed(1)}%</div>
+                    <div class="label">CONVERSION RATE</div>
+                </div>
+
+                <div class="metrics-list">
+                    <div class="metric-item">
+                        <span class="metric-label">Opportunities</span>
+                        <span class="metric-value">${metrics.opportunities.toLocaleString()}</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Applications Submitted</span>
+                        <span class="metric-value">${metrics.submitted.toLocaleString()}</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Applications Completed</span>
+                        <span class="metric-value">${metrics.completed.toLocaleString()}</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Admitted</span>
+                        <span class="metric-value">${metrics.admitted.toLocaleString()}</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Confirmed</span>
+                        <span class="metric-value">${metrics.confirmed.toLocaleString()}</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Registered</span>
+                        <span class="metric-value">${metrics.registered.toLocaleString()}</span>
+                    </div>
+                    @*<div class="metric-item">
+                        <span class="metric-label">International Students</span>
+                        <span class="metric-value">${metrics.internationalPercentage.toFixed(1)}%</span>
+                    </div>*@
+                </div>
+            `;
+
+            detailsDiv.style.display = 'block';
+            updateComparisonVisualization();
+        }
+
+        // Update comparison visualization
+        function updateComparisonVisualization() {
+            const activePrograms = selectedProgramsData.filter(p => p !== null);
+
+            if (activePrograms.length < 2) {
+                document.getElementById('comparisonVisualizationsSection').style.display = 'none';
+                document.getElementById('comparisonSummarySection').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('comparisonVisualizationsSection').style.display = 'block';
+            document.getElementById('comparisonSummarySection').style.display = 'block';
+
+            // Update bar chart
+            updateComparisonBarChart(activePrograms);
+
+            // Update summary table
+            updateComparisonSummaryTable();
+        }
+
+        // Update comparison bar chart
+        function updateComparisonBarChart(programs) {
+            const ctx = document.getElementById('comparisonBarChart');
+
+            const datasets = [
+                {
+                    label: 'Opportunities',
+                    data: programs.map(p => p.metrics.opportunities),
+                    backgroundColor: neuColors.palette[0]
+                },
+                {
+                    label: 'Submitted',
+                    data: programs.map(p => p.metrics.submitted),
+                    backgroundColor: neuColors.palette[1]
+                },
+                {
+                    label: 'Completed',
+                    data: programs.map(p => p.metrics.completed),
+                    backgroundColor: neuColors.palette[2]
+                },
+                {
+                    label: 'Admitted',
+                    data: programs.map(p => p.metrics.admitted),
+                    backgroundColor: neuColors.palette[3]
+                },
+                {
+                    label: 'Confirmed',
+                    data: programs.map(p => p.metrics.confirmed),
+                    backgroundColor: neuColors.palette[4]
+                },
+                {
+                    label: 'Registered',
+                    data: programs.map(p => p.metrics.registered),
+                    backgroundColor: neuColors.palette[5]
+                }
+            ];
+
+            if (comparisonBarChart) {
+                comparisonBarChart.destroy();
+            }
+
+            comparisonBarChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: programs.map(p => p.name),
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                autoSkip: false,
+                                maxRotation: 45,
+                                minRotation: 0
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update comparison summary table
+        function updateComparisonSummaryTable() {
+            const tbody = document.getElementById('comparisonSummaryBody');
+            const metrics = [
+                { key: 'opportunities', label: 'Opportunities', format: 'number' },
+                { key: 'submitted', label: 'Applications Submitted', format: 'number' },
+                { key: 'completed', label: 'Applications Completed', format: 'number' },
+                { key: 'admitted', label: 'Admitted', format: 'number' },
+                { key: 'confirmed', label: 'Confirmed', format: 'number' },
+                { key: 'registered', label: 'Registered', format: 'number' },
+                { key: 'conversionRate', label: 'Conversion Rate', format: 'percentage' },
+                { key: 'internationalPercentage', label: 'International Students', format: 'percentage' }
+            ];
+
+            // Update table headers
+            const headers = document.querySelectorAll('.program-column');
+            selectedProgramsData.forEach((program, index) => {
+                if (index < headers.length) {
+                    headers[index].textContent = program ? program.name : `Program ${index + 1}`;
+                }
+            });
+
+            tbody.innerHTML = '';
+
+            metrics.forEach(metric => {
+                const row = document.createElement('tr');
+                let html = `<td><strong>${metric.label}</strong></td>`;
+
+                // Find best and worst values for highlighting
+                const values = selectedProgramsData
+                    .filter(p => p !== null)
+                    .map(p => p.metrics[metric.key]);
+                const maxValue = Math.max(...values);
+                const minValue = Math.min(...values);
+
+                for (let i = 0; i < comparisonMode; i++) {
+                    const program = selectedProgramsData[i];
+                    if (program) {
+                        const value = program.metrics[metric.key];
+                        let formattedValue = metric.format === 'percentage'
+                            ? `${value.toFixed(1)}%`
+                            : value.toLocaleString();
+
+                        let className = '';
+                        if (values.length > 1) {
+                            if (value === maxValue) className = 'metric-best';
+                            else if (value === minValue && metric.key !== 'conversionRate' && metric.key !== 'internationalPercentage')
+                                className = 'metric-worst';
+                        }
+
+                        html += `<td class="${className}">${formattedValue}</td>`;
+                    } else {
+                        html += `<td>-</td>`;
+                    }
+                }
+
+                row.innerHTML = html;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Clear comparison
+        function clearComparison() {
+            document.querySelectorAll('.program-dropdown').forEach(dropdown => {
+                dropdown.value = '';
+            });
+            document.querySelectorAll('.program-details').forEach(details => {
+                details.style.display = 'none';
+            });
+            selectedProgramsData = [null, null, null, null];
+            updateComparisonVisualization();
+        }
+
+        // Export comparison
+        function exportComparison() {
+            const activePrograms = selectedProgramsData.filter(p => p !== null);
+            if (activePrograms.length === 0) {
+                alert('Please select at least one program to export');
+                return;
+            }
+
+            let csvContent = "Metric," + activePrograms.map(p => `"${p.name}"`).join(',') + "\n";
+
+            const metrics = [
+                { key: 'opportunities', label: 'Opportunities' },
+                { key: 'submitted', label: 'Applications Submitted' },
+                { key: 'completed', label: 'Applications Completed' },
+                { key: 'admitted', label: 'Admitted' },
+                { key: 'confirmed', label: 'Confirmed' },
+                { key: 'registered', label: 'Registered' },
+                { key: 'conversionRate', label: 'Conversion Rate (%)' },
+                { key: 'internationalPercentage', label: 'International Students (%)' }
+            ];
+
+            metrics.forEach(metric => {
+                csvContent += `"${metric.label}",`;
+                csvContent += activePrograms.map(p => {
+                    const value = p.metrics[metric.key];
+                    return metric.key.includes('Rate') || metric.key.includes('Percentage')
+                        ? value.toFixed(1)
+                        : value;
+                }).join(',') + "\n";
+            });
+
+            // Download CSV
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `program_comparison_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Add to comparison from table
+        function addToComparison(programName) {
+            // Find first empty slot
+            for (let i = 0; i < comparisonMode; i++) {
+                const dropdown = document.querySelector(`.program-dropdown[data-index="${i}"]`);
+                if (!dropdown.value) {
+                    dropdown.value = programName;
+                    updateProgramComparison(i);
+                    return;
+                }
+            }
+
+            // All slots filled
+            alert(`All ${comparisonMode} comparison slots are filled. Clear a selection or switch to a higher comparison mode.`);
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Any initialization needed for comparison tool
+        });
+    </script>
+</body>
+</html>
